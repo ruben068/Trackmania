@@ -90,6 +90,7 @@ h1 .accent {
 .record-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.7; }
 .record-time { font-family: var(--mono); font-size: 0.9rem; font-weight: 700; color: var(--yellow); }
 .record-holder { font-size: 0.7rem; opacity: 0.6; }
+.record-when { opacity: 0.5; font-size: 0.6rem; }
 
 /* ── Tabs ─────────────────────────────────────────────────── */
 .tabs {
@@ -314,6 +315,7 @@ td.loser { color: #aaa; }
 .mini-table tr.gold td.mini-rank { background: var(--yellow); }
 .mini-table tr.silver td.mini-rank { background: #e0e0e0; }
 .mini-table tr.bronze td.mini-rank { background: #ffd4b0; }
+.mini-table .mini-when { text-align: right; color: #999; font-size: 0.7rem; width: 70px; }
 
 /* WR history feed */
 .wr-feed { display: flex; flex-direction: column; gap: 0.5rem; }
