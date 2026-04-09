@@ -637,17 +637,19 @@ function renderStats() {
   }
 
   dom.statsGrid.innerHTML = `
-    <div class="stat-card">
+    <div class="stat-card wide">
       <h3>Overview</h3>
-      <div class="stat-kv"><span>Total drivers</span><strong>${entries.length}</strong></div>
-      <div class="stat-kv"><span>All 3 maps completed</span><strong>${complete.length}</strong></div>
-      <div class="stat-kv"><span>${esc(mapNames[0])} played</span><strong>${mc1}</strong></div>
-      <div class="stat-kv"><span>${esc(mapNames[1])} played</span><strong>${mc2}</strong></div>
-      <div class="stat-kv"><span>${esc(mapNames[2])} played</span><strong>${mc3}</strong></div>
-      <div class="stat-kv"><span>Active last hour</span><strong>${recentCount}</strong></div>
-      <div class="stat-kv"><span>Top 100 cutoff</span><strong>${complete.length >= CUTOFF ? fmtTime(complete[CUTOFF - 1].sum) : '—'}</strong></div>
+      <div class="overview-row">
+        <div class="stat-kv"><span>Total drivers</span><strong>${entries.length}</strong></div>
+        <div class="stat-kv"><span>All 3 maps completed</span><strong>${complete.length}</strong></div>
+        <div class="stat-kv"><span>${esc(mapNames[0])} played</span><strong>${mc1}</strong></div>
+        <div class="stat-kv"><span>${esc(mapNames[1])} played</span><strong>${mc2}</strong></div>
+        <div class="stat-kv"><span>${esc(mapNames[2])} played</span><strong>${mc3}</strong></div>
+        <div class="stat-kv"><span>Active last hour</span><strong>${recentCount}</strong></div>
+        <div class="stat-kv"><span>Top 100 cutoff</span><strong>${complete.length >= CUTOFF ? fmtTime(complete[CUTOFF - 1].sum) : '—'}</strong></div>
+      </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card wide">
       <h3>WR History (Live)</h3>
       ${wrHtml}
     </div>
@@ -663,11 +665,11 @@ function renderStats() {
       <h3>Top 10 — ${esc(mapNames[2])}</h3>
       ${top10Html('t3', mapNames[2])}
     </div>
-    <div class="stat-card">
+    <div class="stat-card wide">
       <h3>Combined Time Distribution</h3>
       ${chartHtml}
     </div>
-    <div class="stat-card">
+    <div class="stat-card wide">
       <h3>Top Countries by Drivers</h3>
       ${countryHtml}
     </div>
