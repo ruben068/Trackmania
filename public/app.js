@@ -50,6 +50,8 @@ let fetchedAt = 0;
 let activeTab = 'leaderboard';
 let highlightName = '';
 let prevRanks = new Map(); // name -> previous rank for movement tracking
+let wrHistory = []; // { time, map, player, timestamp }
+let prevWRs = { t1: null, t2: null, t3: null }; // previous world records to detect new ones
 
 // ── Helpers ───────────────────────────────────────────────────
 function fmtTime(ms) {
@@ -329,6 +331,27 @@ function updateRecords() {
   dom.recHolder3.textContent = wr3 ? wr3.name : '';
 
   dom.recBanner.style.display = '';
+
+  // Detect new WRs
+  const now = Date.now();
+  if (wr1 && (prevWRs.t1 === null || wr1.t1 < prevWRs.t1)) {
+    if (prevWRs.t1 !== null) {
+      wrHistory.unshift({ map: mapNames[0], player: wr1.name, time: wr1.t1, prev: prevWRs.t1, when: now });
+    }
+    prevWRs.t1 = wr1.t1;
+  }
+  if (wr2 && (prevWRs.t2 === null || wr2.t2 < prevWRs.t2)) {
+    if (prevWRs.t2 !== null) {
+      wrHistory.unshift({ map: mapNames[1], player: wr2.name, time: wr2.t2, prev: prevWRs.t2, when: now });
+    }
+    prevWRs.t2 = wr2.t2;
+  }
+  if (wr3 && (prevWRs.t3 === null || wr3.t3 < prevWRs.t3)) {
+    if (prevWRs.t3 !== null) {
+      wrHistory.unshift({ map: mapNames[2], player: wr3.name, time: wr3.t3, prev: prevWRs.t3, when: now });
+    }
+    prevWRs.t3 = wr3.t3;
+  }
 }
 
 // ── Country filter populate ───────────────────────────────────
@@ -573,6 +596,46 @@ function renderStats() {
   const hourAgo = Math.floor(Date.now() / 1000) - 3600;
   const recentCount = entries.filter(e => e.li && e.li > hourAgo).length;
 
+  // Top 10 per map
+  function top10Html(key, mapName) {
+    const top = entries
+      .filter(e => e[key] != null)
+      .sort((a, b) => a[key] - b[key])
+      .slice(0, 10);
+    let html = '<table class="mini-table"><tbody>';
+    top.forEach((e, i) => {
+      const cls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+      html += `<tr class="${cls}">
+        <td class="col-rank mini-rank">${i + 1}</td>
+        <td class="col-player mini-player">${flag(e.flag)}${esc(e.name)}</td>
+        <td class="col-time">${fmtTime(e[key])}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    return html;
+  }
+
+  // WR history feed
+  let wrHtml = '';
+  if (wrHistory.length === 0) {
+    wrHtml = '<p class="wr-empty">No new records detected yet during this session. Records will appear here live when a WR is broken.</p>';
+  } else {
+    wrHtml = '<div class="wr-feed">';
+    for (const wr of wrHistory.slice(0, 20)) {
+      const improved = fmtTime(wr.prev - wr.time);
+      const when = ago(Math.floor(wr.when / 1000));
+      wrHtml += `
+        <div class="wr-entry">
+          <span class="wr-badge">NEW WR</span>
+          <strong>${esc(wr.player)}</strong> set <span class="wr-time">${fmtTime(wr.time)}</span>
+          on <em>${esc(wr.map)}</em>
+          <span class="wr-improve">(-${improved})</span>
+          <span class="wr-when">${when}</span>
+        </div>`;
+    }
+    wrHtml += '</div>';
+  }
+
   dom.statsGrid.innerHTML = `
     <div class="stat-card">
       <h3>Overview</h3>
@@ -583,6 +646,22 @@ function renderStats() {
       <div class="stat-kv"><span>${esc(mapNames[2])} played</span><strong>${mc3}</strong></div>
       <div class="stat-kv"><span>Active last hour</span><strong>${recentCount}</strong></div>
       <div class="stat-kv"><span>Top 100 cutoff</span><strong>${complete.length >= CUTOFF ? fmtTime(complete[CUTOFF - 1].sum) : '—'}</strong></div>
+    </div>
+    <div class="stat-card">
+      <h3>WR History (Live)</h3>
+      ${wrHtml}
+    </div>
+    <div class="stat-card">
+      <h3>Top 10 — ${esc(mapNames[0])}</h3>
+      ${top10Html('t1', mapNames[0])}
+    </div>
+    <div class="stat-card">
+      <h3>Top 10 — ${esc(mapNames[1])}</h3>
+      ${top10Html('t2', mapNames[1])}
+    </div>
+    <div class="stat-card">
+      <h3>Top 10 — ${esc(mapNames[2])}</h3>
+      ${top10Html('t3', mapNames[2])}
     </div>
     <div class="stat-card">
       <h3>Combined Time Distribution</h3>

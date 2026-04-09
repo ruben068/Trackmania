@@ -303,6 +303,32 @@ td.loser { color: #aaa; }
 .stat-list-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
 .stat-list-row > span:first-child { min-width: 150px; font-weight: 600; }
 
+/* Mini tables (top 10 per map) */
+.mini-table { width: 100%; border-collapse: collapse; }
+.mini-table td { padding: 0.25rem 0.4rem; font-size: 0.82rem; border-bottom: 1px solid #e0ddd5; }
+.mini-table .mini-rank { width: 30px; text-align: center; font-family: var(--mono); font-weight: 700; }
+.mini-table .mini-player { font-weight: 600; }
+.mini-table .col-time { font-family: var(--mono); }
+.mini-table tr.gold td.mini-rank { background: var(--yellow); }
+.mini-table tr.silver td.mini-rank { background: #e0e0e0; }
+.mini-table tr.bronze td.mini-rank { background: #ffd4b0; }
+
+/* WR history feed */
+.wr-feed { display: flex; flex-direction: column; gap: 0.5rem; }
+.wr-entry {
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+  padding: 0.5rem; border: 2px solid var(--ink); background: #fffbe6;
+  font-size: 0.82rem;
+}
+.wr-badge {
+  background: var(--red); color: white; font-size: 0.6rem; font-weight: 700;
+  padding: 0.15rem 0.4rem; letter-spacing: 0.08em; border: 2px solid var(--ink);
+}
+.wr-time { font-family: var(--mono); font-weight: 700; color: var(--blue); }
+.wr-improve { font-family: var(--mono); font-size: 0.75rem; color: var(--green-win); font-weight: 600; }
+.wr-when { font-size: 0.7rem; color: #999; margin-left: auto; }
+.wr-empty { font-size: 0.82rem; color: #999; font-style: italic; padding: 0.5rem 0; }
+
 /* ── Load more ────────────────────────────────────────────── */
 .load-more { display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 1.5rem 0; }
 #loadMoreBtn {
