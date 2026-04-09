@@ -1,5 +1,8 @@
 // ── Config ────────────────────────────────────────────────────
-const API = '/api/leaderboard';
+// Use local proxy if available, otherwise call API directly (GitHub Pages)
+const API = location.hostname === 'localhost'
+  ? '/api/leaderboard'
+  : 'https://redbull-faster-leaderboard.redbull-faster.workers.dev/leaderboard';
 const PAGE = 100;
 const REFRESH = 50;
 const CUTOFF = 100; // top 100 advance
