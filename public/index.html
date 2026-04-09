@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Red Bull Faster — Live Rankings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=VT323&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" id="themeCSS" href="crt.css">
+</head>
+<body>
+  <div class="noise"></div>
+
+  <header>
+    <div class="header-left">
+      <div class="logo-block">
+        <span class="logo-icon">⚡</span>
+        <div>
+          <h1>RED BULL <span class="accent">FASTER</span></h1>
+          <p class="subtitle">TRACKMANIA — LIVE RANKINGS</p>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="stat-pill">
+        <span class="stat-label">DRIVERS</span>
+        <span class="stat-value" id="playerCount">—</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-label">UPDATED</span>
+        <span class="stat-value" id="lastUpdated">—</span>
+      </div>
+      <div class="stat-pill countdown-pill">
+        <span class="stat-label">DEADLINE</span>
+        <span class="stat-value" id="countdown">—</span>
+      </div>
+      <div class="pulse-dot" id="liveDot"></div>
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-btn active" data-theme="crt.css" title="CRT Terminal">I</button>
+        <button class="theme-btn" data-theme="brutalist.css" title="Brutalist">II</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Records banner -->
+  <div class="records-banner" id="recordsBanner" style="display:none">
+    <div class="record-item">
+      <span class="record-label" id="recLabel1">Map 1</span>
+      <span class="record-time" id="recTime1">—</span>
+      <span class="record-holder" id="recHolder1"></span>
+    </div>
+    <div class="record-item">
+      <span class="record-label" id="recLabel2">Map 2</span>
+      <span class="record-time" id="recTime2">—</span>
+      <span class="record-holder" id="recHolder2"></span>
+    </div>
+    <div class="record-item">
+      <span class="record-label" id="recLabel3">Map 3</span>
+      <span class="record-time" id="recTime3">—</span>
+      <span class="record-holder" id="recHolder3"></span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="leaderboard">Leaderboard</button>
+    <button class="tab" data-tab="countries">Countries</button>
+    <button class="tab" data-tab="compare">Compare</button>
+    <button class="tab" data-tab="stats">Stats</button>
+  </div>
+
+  <!-- Toolbar (leaderboard tab) -->
+  <div class="toolbar" id="toolbarMain">
+    <div class="toolbar-row">
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search driver..." autocomplete="off" spellcheck="false">
+      </div>
+      <div class="toolbar-actions">
+        <select id="countryFilter" class="country-select">
+          <option value="">All countries</option>
+        </select>
+        <div class="findme-wrap">
+          <input type="text" id="findMeInput" placeholder="Your name..." autocomplete="off" spellcheck="false">
+          <button id="findMeBtn" class="findme-btn">FIND ME</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <div id="loading" class="state-msg">
+      <div class="loader"></div>
+      <p>Connecting to live timing...</p>
+    </div>
+
+    <div id="error" class="state-msg" style="display:none">
+      <p class="error-text"></p>
+    </div>
+
+    <!-- Leaderboard tab -->
+    <div class="tab-panel active" id="panelLeaderboard">
+      <div class="table-wrap" style="display:none" id="tableWrap">
+        <table id="leaderboard">
+          <thead>
+            <tr>
+              <th class="col-rank">#</th>
+              <th class="col-player">Driver</th>
+              <th class="col-time sortable" id="hMap1" data-sort="map1">Map 1 <span class="sort-arrow">↕</span></th>
+              <th class="col-time sortable" id="hMap2" data-sort="map2">Map 2 <span class="sort-arrow">↕</span></th>
+              <th class="col-time sortable" id="hMap3" data-sort="map3">Map 3 <span class="sort-arrow">↕</span></th>
+              <th class="col-total sortable active" id="hTotal" data-sort="total">Combined <span class="sort-arrow">↕</span></th>
+              <th class="col-improved">Last Run</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div id="loadMore" class="load-more" style="display:none">
+        <button id="loadMoreBtn">LOAD MORE</button>
+        <span id="loadMoreInfo" class="load-more-info"></span>
+      </div>
+    </div>
+
+    <!-- Countries tab -->
+    <div class="tab-panel" id="panelCountries" style="display:none">
+      <div class="table-wrap">
+        <table id="countryTable">
+          <thead>
+            <tr>
+              <th class="col-rank">#</th>
+              <th class="col-player">Country</th>
+              <th class="col-time">Best Driver</th>
+              <th class="col-total">Best Time</th>
+              <th class="col-time">Drivers</th>
+              <th class="col-time">Avg Time (Top 5)</th>
+            </tr>
+          </thead>
+          <tbody id="countryBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Compare tab -->
+    <div class="tab-panel" id="panelCompare" style="display:none">
+      <div class="compare-inputs">
+        <div class="compare-field">
+          <label>Driver 1</label>
+          <input type="text" id="cmp1" placeholder="Name..." autocomplete="off" spellcheck="false">
+        </div>
+        <span class="compare-vs">VS</span>
+        <div class="compare-field">
+          <label>Driver 2</label>
+          <input type="text" id="cmp2" placeholder="Name..." autocomplete="off" spellcheck="false">
+        </div>
+        <button id="compareBtn" class="findme-btn">COMPARE</button>
+      </div>
+      <div id="compareResult" class="compare-result"></div>
+    </div>
+
+    <!-- Stats tab -->
+    <div class="tab-panel" id="panelStats" style="display:none">
+      <div class="stats-grid" id="statsGrid"></div>
+    </div>
+  </main>
+
+  <footer>
+    <p>Data sourced from Nadeo Live Services via community API. Not affiliated with Red Bull or Ubisoft Nadeo.</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    document.getElementById('themeSwitcher').addEventListener('click', e => {
+      const btn = e.target.closest('.theme-btn');
+      if (!btn) return;
+      document.getElementById('themeCSS').href = btn.dataset.theme;
+      document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      localStorage.setItem('rbf-theme', btn.dataset.theme);
+    });
+    const saved = localStorage.getItem('rbf-theme');
+    if (saved && saved !== 'style.css') {
+      document.getElementById('themeCSS').href = saved;
+      document.querySelectorAll('.theme-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.theme === saved);
+      });
+    }
+  </script>
+</body>
+</html>
