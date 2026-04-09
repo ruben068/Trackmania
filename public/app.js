@@ -541,10 +541,10 @@ function renderStats() {
   }
   chartHtml += '</div>';
 
-  // Map completion stats
-  const mc1 = entries.filter(e => e.t1 != null).length;
-  const mc2 = entries.filter(e => e.t2 != null).length;
-  const mc3 = entries.filter(e => e.t3 != null).length;
+  // Map completion breakdown
+  const played3 = complete.length;
+  const played2 = entries.filter(e => e.mc === 2).length;
+  const played1 = entries.filter(e => e.mc === 1).length;
 
   // Top countries by # of drivers
   const countryCounts = new Map();
@@ -598,10 +598,9 @@ function renderStats() {
       <h3>Overview</h3>
       <div class="overview-row">
         <div class="stat-kv"><span>Total drivers</span><strong>${entries.length}</strong></div>
-        <div class="stat-kv"><span>All 3 maps completed</span><strong>${complete.length}</strong></div>
-        <div class="stat-kv"><span>${esc(mapNames[0])} played</span><strong>${mc1}</strong></div>
-        <div class="stat-kv"><span>${esc(mapNames[1])} played</span><strong>${mc2}</strong></div>
-        <div class="stat-kv"><span>${esc(mapNames[2])} played</span><strong>${mc3}</strong></div>
+        <div class="stat-kv"><span>Played 3 maps</span><strong>${played3}</strong></div>
+        <div class="stat-kv"><span>Played 2 maps</span><strong>${played2}</strong></div>
+        <div class="stat-kv"><span>Played 1 map</span><strong>${played1}</strong></div>
         <div class="stat-kv"><span>Active last hour</span><strong>${recentCount}</strong></div>
         <div class="stat-kv"><span>Top 100 cutoff</span><strong>${complete.length >= CUTOFF ? fmtTime(complete[CUTOFF - 1].sum) : '—'}</strong></div>
       </div>
