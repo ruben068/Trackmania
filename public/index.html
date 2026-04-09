@@ -6,7 +6,7 @@
   <title>Red Bull Faster — Live Rankings</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=VT323&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" id="themeCSS" href="crt.css">
+  <link rel="stylesheet" href="brutalist.css">
 </head>
 <body>
   <div class="noise"></div>
@@ -35,10 +35,6 @@
         <span class="stat-value" id="countdown">—</span>
       </div>
       <div class="pulse-dot" id="liveDot"></div>
-      <div class="theme-switcher" id="themeSwitcher">
-        <button class="theme-btn active" data-theme="crt.css" title="CRT Terminal">I</button>
-        <button class="theme-btn" data-theme="brutalist.css" title="Brutalist">II</button>
-      </div>
     </div>
   </header>
 
@@ -172,22 +168,5 @@
   </footer>
 
   <script src="app.js"></script>
-  <script>
-    document.getElementById('themeSwitcher').addEventListener('click', e => {
-      const btn = e.target.closest('.theme-btn');
-      if (!btn) return;
-      document.getElementById('themeCSS').href = btn.dataset.theme;
-      document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      localStorage.setItem('rbf-theme', btn.dataset.theme);
-    });
-    const saved = localStorage.getItem('rbf-theme');
-    if (saved && saved !== 'style.css') {
-      document.getElementById('themeCSS').href = saved;
-      document.querySelectorAll('.theme-btn').forEach(b => {
-        b.classList.toggle('active', b.dataset.theme === saved);
-      });
-    }
-  </script>
 </body>
 </html>
