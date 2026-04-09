@@ -220,6 +220,14 @@ tr.silver td.col-rank { background: #e0e0e0; }
 tr.bronze { background: linear-gradient(90deg, #ffe8d6 0%, var(--paper) 50%); }
 tr.bronze td.col-rank { background: #ffd4b0; }
 
+/* Movement indicators */
+.move-up, .move-down, .move-new {
+  display: block; font-size: 0.55rem; line-height: 1; font-weight: 700;
+}
+.move-up { color: var(--green-win); }
+.move-down { color: var(--red); }
+.move-new { color: var(--blue); }
+
 /* Top 100 cutoff */
 tr.cutoff-row td { border-bottom: 4px solid var(--red); }
 tr.below-cutoff td { opacity: 0.5; }

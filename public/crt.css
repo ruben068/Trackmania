@@ -218,6 +218,14 @@ tr.silver td.col-rank::before { content: '- '; }
 tr.bronze td { color: #88bb88; }
 tr.bronze td.col-rank::before { content: '- '; }
 
+/* Movement indicators */
+.move-up, .move-down, .move-new {
+  display: block; font-size: 0.6rem; line-height: 1;
+}
+.move-up { color: var(--green); }
+.move-down { color: var(--red); }
+.move-new { color: var(--amber); }
+
 /* Top 100 cutoff */
 tr.cutoff-row td { border-bottom: 2px dashed var(--amber); }
 tr.below-cutoff td { opacity: 0.6; }

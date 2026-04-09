@@ -49,6 +49,7 @@ let mapNames = ['Map 1', 'Map 2', 'Map 3'];
 let fetchedAt = 0;
 let activeTab = 'leaderboard';
 let highlightName = '';
+let prevRanks = new Map(); // name -> previous rank for movement tracking
 
 // ── Helpers ───────────────────────────────────────────────────
 function fmtTime(ms) {
@@ -210,8 +211,20 @@ function row(e, best) {
     if (d) delta = `<span class="delta">${d}</span>`;
   }
 
+  // Movement indicator
+  let moveHtml = '';
+  const nameKey = (e.name || '').toLowerCase();
+  if (prevRanks.size > 0 && prevRanks.has(nameKey)) {
+    const prev = prevRanks.get(nameKey);
+    const diff = prev - r; // positive = moved up
+    if (diff > 0) moveHtml = `<span class="move-up" title="Up ${diff}">▲${diff}</span>`;
+    else if (diff < 0) moveHtml = `<span class="move-down" title="Down ${Math.abs(diff)}">▼${Math.abs(diff)}</span>`;
+  } else if (prevRanks.size > 0) {
+    moveHtml = `<span class="move-new" title="New entry">★</span>`;
+  }
+
   tr.innerHTML = `
-    <td class="col-rank">${r}</td>
+    <td class="col-rank">${r}${moveHtml}</td>
     <td class="col-player">${flag(e.flag)}${esc(e.name)}</td>
     <td class="col-time ${t1 == null ? 'time-missing' : ''}">${t1 != null ? mr(e.r1) + t1 : '—'}</td>
     <td class="col-time ${t2 == null ? 'time-missing' : ''}">${t2 != null ? mr(e.r2) + t2 : '—'}</td>
@@ -632,6 +645,14 @@ async function fetchData() {
     dom.players.textContent = raw.total || raw.entries.length;
     fetchedAt = Date.now();
     dom.updated.textContent = 'just now';
+
+    // Save current ranks before re-sorting for movement tracking
+    if (sorted && sorted.length > 0) {
+      prevRanks = new Map();
+      for (const e of sorted) {
+        prevRanks.set((e.name || '').toLowerCase(), e.rank);
+      }
+    }
 
     sorted = doSort();
     updateHeaders();
