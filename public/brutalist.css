@@ -371,19 +371,19 @@ td.loser { color: #aaa; }
   border-bottom: 1px solid #e0ddd5;
 }
 .match-table tr:last-child td { border-bottom: none; }
-.match-table .seed {
+.match-table .m-seed {
   width: 20%; text-align: center; font-family: var(--mono);
   font-weight: 700; color: #777; background: #f8f4ec;
   border-right: 1px solid #e0ddd5;
 }
-.match-table .col-player {
+.match-table .m-player {
   width: 40%; font-weight: 600; white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis;
 }
-.match-table .col-player .player-flag {
+.match-table .m-player .player-flag {
   width: 14px; height: 10px; margin-right: 0.3rem;
 }
-.match-table .col-time {
+.match-table .m-time {
   width: 40%; font-family: var(--mono); font-size: 0.72rem;
   text-align: right; color: #777; white-space: nowrap;
 }

@@ -686,15 +686,15 @@ function renderBracket() {
       const driver = ranked[seed - 1];
       if (!driver) {
         rows += `<tr class="empty">
-          <td class="seed">${seed}</td>
-          <td class="col-player">—</td>
-          <td class="col-time">—</td>
+          <td class="m-seed">${seed}</td>
+          <td class="m-player">—</td>
+          <td class="m-time">—</td>
         </tr>`;
       } else {
         rows += `<tr>
-          <td class="seed">${seed}</td>
-          <td class="col-player">${flag(driver.flag)}${esc(driver.name)}</td>
-          <td class="col-time">${fmtTime(driver.sum)}</td>
+          <td class="m-seed">${seed}</td>
+          <td class="m-player">${flag(driver.flag)}${esc(driver.name)}</td>
+          <td class="m-time">${fmtTime(driver.sum)}</td>
         </tr>`;
       }
     });
