@@ -375,6 +375,7 @@ td.loser { color: #aaa; }
   text-align: center; font-family: var(--mono);
   font-weight: 700; color: #777; background: #f8f4ec;
   border-right: 1px solid #e0ddd5;
+  padding: 0.3rem 0.5rem; min-width: 28px;
 }
 .match-table .col-player {
   font-weight: 600; width: 100%;
