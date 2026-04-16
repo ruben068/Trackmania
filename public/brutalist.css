@@ -365,10 +365,11 @@ td.loser { color: #aaa; }
   letter-spacing: 0.05em; text-transform: uppercase;
 }
 
-.match-table { width: 100%; border-collapse: collapse; table-layout: auto; }
+.match-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .match-table td {
-  padding: 0.3rem 0.4rem; font-size: 0.78rem;
+  padding: 0.3rem 0.3rem; font-size: 0.78rem;
   border-bottom: 1px solid #e0ddd5;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .match-table tr:last-child td { border-bottom: none; }
 .match-table .seed {
@@ -377,17 +378,15 @@ td.loser { color: #aaa; }
   border-right: 1px solid #e0ddd5; padding: 0.3rem 0.2rem;
 }
 .match-table .col-player {
-  font-weight: 600; white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
-  width: auto;
+  font-weight: 600;
 }
 .match-table .col-player .player-flag {
   width: 14px; height: 10px; margin-right: 0.3rem;
 }
 .match-table .col-time {
-  font-family: var(--mono); font-size: 0.7rem;
-  text-align: right; white-space: nowrap;
-  color: #555; padding-left: 0.3rem;
+  font-family: var(--mono); font-size: 0.65rem;
+  text-align: right; color: #999;
+  width: 58px; padding-left: 0.1rem; padding-right: 0.3rem;
 }
 .match-table tr.empty td { color: #bbb; font-style: italic; }
 .match-table tr:nth-child(-n+3) .seed { color: var(--red); }
