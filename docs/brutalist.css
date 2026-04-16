@@ -80,6 +80,36 @@ h1 .accent {
 .pulse-dot.fetching { background: var(--red); }
 @keyframes pulse-brut { 0%, 50% { transform: scale(1); } 51%, 100% { transform: scale(0.7); } }
 
+/* ── Hero callout ─────────────────────────────────────────── */
+.hero-callout {
+  display: flex; align-items: center; justify-content: center;
+  gap: 1rem; padding: 0.7rem 1rem;
+  background: repeating-linear-gradient(
+    45deg, var(--yellow) 0 20px, #ffd97a 20px 40px
+  );
+  border-bottom: var(--border-thick);
+  flex-wrap: wrap;
+}
+.callout-text {
+  font-family: var(--serif); font-size: 1rem;
+  color: var(--ink); font-style: italic;
+}
+.callout-text strong {
+  background: var(--ink); color: var(--paper);
+  padding: 0.1rem 0.35rem; font-style: normal; font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.callout-btn {
+  padding: 0.45rem 1rem; background: var(--red); border: var(--border);
+  color: white; font-family: var(--sans); font-size: 0.75rem;
+  font-weight: 700; cursor: pointer; box-shadow: 3px 3px 0 var(--ink);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  transition: all 0.05s;
+}
+.callout-btn:hover {
+  transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink);
+}
+
 /* ── Records banner ───────────────────────────────────────── */
 .records-banner {
   display: flex; justify-content: center; gap: 1.5rem;
@@ -348,6 +378,41 @@ td.loser { color: #aaa; }
   padding-bottom: 1px;
 }
 .intro-link:hover { background: var(--red); color: white; }
+
+.bracket-search {
+  display: flex; align-items: center; gap: 0.6rem;
+  margin-top: 0.8rem;
+}
+.bracket-search input {
+  width: 280px; padding: 0.5rem 0.7rem; background: var(--paper);
+  border: var(--border); color: var(--ink); font-family: var(--sans);
+  font-size: 0.85rem; font-weight: 600; outline: none;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.bracket-search input:focus {
+  box-shadow: 2px 2px 0 var(--ink); transform: translate(1px, 1px);
+}
+.bracket-search-info {
+  font-family: var(--sans); font-size: 0.8rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.bracket-search-info.hit { color: var(--green-win); }
+.bracket-search-info.miss { color: var(--red); }
+
+.match-card h3.has-hit {
+  background: var(--red);
+  animation: pulse-header 1s ease-in-out infinite;
+}
+@keyframes pulse-header {
+  0%, 100% { background: var(--red); }
+  50% { background: #ff5566; }
+}
+
+.match-table tr.match-hit td {
+  background: var(--yellow) !important;
+  font-weight: 900;
+  box-shadow: inset 3px 0 0 var(--red);
+}
 
 .bracket-grid {
   display: grid; grid-template-columns: repeat(4, 1fr);

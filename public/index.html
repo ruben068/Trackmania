@@ -38,6 +38,12 @@
     </div>
   </header>
 
+  <!-- Hero callout -->
+  <div class="hero-callout" id="heroCallout">
+    <span class="callout-text">Curious where you'd land in <strong>Stage 2</strong>?</span>
+    <button class="callout-btn" id="calloutBtn">SEE LIVE SEEDING →</button>
+  </div>
+
   <!-- Records banner -->
   <div class="records-banner" id="recordsBanner" style="display:none">
     <div class="record-item">
@@ -168,6 +174,10 @@
       <div class="bracket-intro">
         <p>Virtual Stage 2 Round 1 seeding based on the current top 100. Multi-life Knockout format, 6 tracks, 4 rounds per track.</p>
         <p><a href="https://heyzine.com/flip-book/072f114424.html" target="_blank" rel="noopener" class="intro-link">Read the full tournament rules →</a></p>
+        <div class="bracket-search">
+          <input type="text" id="bracketSearch" placeholder="Find your name in the bracket..." autocomplete="off" spellcheck="false">
+          <span id="bracketSearchInfo" class="bracket-search-info"></span>
+        </div>
       </div>
       <div class="bracket-grid" id="bracketGrid"></div>
     </div>

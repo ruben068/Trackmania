@@ -42,6 +42,9 @@ const dom = {
   compareResult:$('compareResult'),
   statsGrid:    $('statsGrid'),
   bracketGrid:  $('bracketGrid'),
+  bracketSearch: $('bracketSearch'),
+  bracketSearchInfo: $('bracketSearchInfo'),
+  calloutBtn:   $('calloutBtn'),
 };
 
 // ── State ─────────────────────────────────────────────────────
@@ -669,6 +672,8 @@ const STAGE2_SEEDS = {
 
 function renderBracket() {
   if (!raw) return;
+  const query = (dom.bracketSearch.value || '').trim().toLowerCase();
+
   // Use combined ranking (complete entries), sorted by total
   const ranked = [...raw.entries]
     .sort((a, b) => {
@@ -677,11 +682,15 @@ function renderBracket() {
     });
 
   const frag = document.createDocumentFragment();
+  let matchCount = 0;
+  let matchedIn = null;
 
   for (const [matchName, seeds] of Object.entries(STAGE2_SEEDS)) {
     const card = document.createElement('div');
     card.className = 'match-card';
+    let cardHasMatch = false;
     let rows = '';
+
     seeds.forEach(seed => {
       const driver = ranked[seed - 1];
       if (!driver) {
@@ -691,15 +700,19 @@ function renderBracket() {
           <td class="m-time">—</td>
         </tr>`;
       } else {
-        rows += `<tr>
+        const hit = query && query.length >= 2
+          && (driver.name || '').toLowerCase().includes(query);
+        if (hit) { cardHasMatch = true; matchCount++; matchedIn = matchName; }
+        rows += `<tr${hit ? ' class="match-hit" id="bracket-hit"' : ''}>
           <td class="m-seed">${seed}</td>
           <td class="m-player">${flag(driver.flag)}${esc(driver.name)}</td>
           <td class="m-time">${fmtTime(driver.sum)}</td>
         </tr>`;
       }
     });
+
     card.innerHTML = `
-      <h3>${matchName}</h3>
+      <h3${cardHasMatch ? ' class="has-hit"' : ''}>${matchName}</h3>
       <table class="match-table"><tbody>${rows}</tbody></table>
     `;
     frag.appendChild(card);
@@ -707,6 +720,25 @@ function renderBracket() {
 
   dom.bracketGrid.innerHTML = '';
   dom.bracketGrid.appendChild(frag);
+
+  // Update search info
+  if (query && query.length >= 2) {
+    if (matchCount === 0) {
+      dom.bracketSearchInfo.textContent = 'Not in top 100';
+      dom.bracketSearchInfo.className = 'bracket-search-info miss';
+    } else {
+      dom.bracketSearchInfo.textContent = `${matchCount} result${matchCount > 1 ? 's' : ''} — ${matchedIn}`;
+      dom.bracketSearchInfo.className = 'bracket-search-info hit';
+      // Scroll to the hit
+      requestAnimationFrame(() => {
+        const el = document.getElementById('bracket-hit');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
+  } else {
+    dom.bracketSearchInfo.textContent = '';
+    dom.bracketSearchInfo.className = 'bracket-search-info';
+  }
 }
 
 // ── Fetch ─────────────────────────────────────────────────────
@@ -788,6 +820,20 @@ dom.search.addEventListener('input', () => {
   highlightName = '';
   clearTimeout(searchTimer);
   searchTimer = setTimeout(render, 150);
+});
+
+// Bracket search
+let bracketSearchTimer;
+dom.bracketSearch.addEventListener('input', () => {
+  clearTimeout(bracketSearchTimer);
+  bracketSearchTimer = setTimeout(renderBracket, 150);
+});
+
+// Hero callout -> Stage 2 tab
+dom.calloutBtn.addEventListener('click', () => {
+  const stage2Tab = document.querySelector('.tab[data-tab="bracket"]');
+  if (stage2Tab) stage2Tab.click();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 // ── Ticker ────────────────────────────────────────────────────
