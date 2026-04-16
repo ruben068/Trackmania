@@ -286,35 +286,52 @@
     return list;
   }
 
-  function advancementRank(name) {
+  // Dutch sort: per rule 97 — R4 > R3 > R1 (R2 is not a stopping point),
+  // then by match placement (lower index = higher place), tiebreak by Stage 1 seed.
+  function dutchSortScore(name) {
     const r4 = state.r4.m0 || [];
     const r4i = r4.indexOf(name);
-    if (r4i === 0) return 100;
-    if (r4i > 0) return 90 - r4i;
+    if (r4i > 0) return { round: 4, placement: r4i, seed: seedOf(name) };
 
     for (let m = 0; m < 2; m++) {
       const r3 = state.r3['m' + m] || [];
       const r3i = r3.indexOf(name);
-      if (r3i >= 0) return 70 - r3i;
+      if (r3i >= 4) return { round: 3, placement: r3i, seed: seedOf(name) };
     }
-    for (let m = 0; m < 2; m++) {
-      const r2 = state.r2['m' + m] || [];
-      const r2i = r2.indexOf(name);
-      if (r2i >= 0) return 50 - r2i;
-    }
+
     for (let m = 0; m < 4; m++) {
       const r1 = state.r1['m' + m] || [];
       const r1i = r1.indexOf(name);
-      if (r1i >= 0) return 25 - r1i;
+      if (r1i >= 12) return { round: 1, placement: r1i, seed: seedOf(name) };
     }
-    return 0;
+
+    return { round: 0, placement: 999, seed: seedOf(name) };
+  }
+
+  function sortDutch(names) {
+    return names.slice().sort((a, b) => {
+      const sa = dutchSortScore(a);
+      const sb = dutchSortScore(b);
+      if (sa.round !== sb.round) return sb.round - sa.round;
+      if (sa.placement !== sb.placement) return sa.placement - sb.placement;
+      return sa.seed - sb.seed;
+    });
   }
 
   function furthestRoundLabel(name) {
-    if ((state.r4.m0 || []).includes(name)) return 'Round 4';
-    for (let m = 0; m < 2; m++) if ((state.r3['m' + m] || []).includes(name)) return 'Round 3';
-    for (let m = 0; m < 2; m++) if ((state.r2['m' + m] || []).includes(name)) return 'Round 2';
-    for (let m = 0; m < 4; m++) if ((state.r1['m' + m] || []).includes(name)) return 'Round 1';
+    const r4 = state.r4.m0 || [];
+    if (r4.includes(name)) {
+      const i = r4.indexOf(name);
+      return `R4 P${i + 1}`;
+    }
+    for (let m = 0; m < 2; m++) {
+      const r3 = state.r3['m' + m] || [];
+      if (r3.includes(name)) return `R3 P${r3.indexOf(name) + 1}`;
+    }
+    for (let m = 0; m < 4; m++) {
+      const r1 = state.r1['m' + m] || [];
+      if (r1.includes(name)) return `R1 P${r1.indexOf(name) + 1}`;
+    }
     return '—';
   }
 
@@ -361,11 +378,11 @@
             : 'No Dutch drivers in Stage 2 — 8th slot goes to P2 of Round 4.';
         }
       } else {
-        // Round 5 Dutch qualification
+        // Round 5 Dutch qualification — pick up to 4 by furthest round (R4>R3>R1),
+        // then match placement, tiebreak Stage 1 seed (rule 97).
         const dutchInSim = [...Object.values(state.r1).flat()]
           .filter(n => { const d = driverByName.get(n); return d && d.flag === 'nl'; });
-        dutchInSim.sort((a, b) => advancementRank(b) - advancementRank(a));
-        const top4 = dutchInSim.slice(0, 4);
+        const top4 = sortDutch(dutchInSim).slice(0, 4);
 
         eighthHtml = `<div class="finalist-card round5">
           <span class="finalist-num">8</span>
