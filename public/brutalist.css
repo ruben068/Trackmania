@@ -333,6 +333,52 @@ td.loser { color: #aaa; }
 .wr-when { font-size: 0.7rem; color: #999; margin-left: auto; }
 .wr-empty { font-size: 0.82rem; color: #999; font-style: italic; padding: 0.5rem 0; }
 
+/* ── Stage 2 Bracket ──────────────────────────────────────── */
+.bracket-intro {
+  padding: 1rem 0 0.5rem; max-width: 800px;
+}
+.bracket-intro p {
+  font-family: var(--serif); font-style: italic; font-size: 0.9rem; color: #555;
+}
+
+.bracket-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1rem; padding: 1rem 0;
+}
+
+.match-card {
+  border: var(--border); background: var(--paper);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.match-card h3 {
+  font-family: var(--serif); font-size: 1.1rem; font-weight: 900;
+  padding: 0.6rem 0.8rem; background: var(--blue); color: white;
+  border-bottom: var(--border); text-align: center;
+  letter-spacing: 0.05em; text-transform: uppercase;
+}
+
+.match-table { width: 100%; border-collapse: collapse; }
+.match-table td {
+  padding: 0.3rem 0.5rem; font-size: 0.8rem;
+  border-bottom: 1px solid #e0ddd5;
+}
+.match-table tr:last-child td { border-bottom: none; }
+.match-table .seed {
+  width: 32px; text-align: center; font-family: var(--mono);
+  font-weight: 700; color: #777; background: #f8f4ec;
+  border-right: 1px solid #e0ddd5;
+}
+.match-table .col-player {
+  font-weight: 600; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 0;
+}
+.match-table .col-time {
+  font-family: var(--mono); font-size: 0.75rem;
+  text-align: right; width: 70px; color: #555;
+}
+.match-table tr.empty td { color: #bbb; font-style: italic; }
+.match-table tr:nth-child(-n+3) .seed { color: var(--red); }
+
 /* ── Load more ────────────────────────────────────────────── */
 .load-more { display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 1.5rem 0; }
 #loadMoreBtn {
@@ -372,6 +418,7 @@ footer p { font-size: 0.65rem; color: #888; font-style: italic; font-family: var
   .toolbar { padding-left: 0.8rem; padding-right: 0.8rem; }
   .stats-grid { grid-template-columns: 1fr; }
   .stat-card.wide { grid-column: 1; }
+  .bracket-grid { grid-template-columns: 1fr 1fr; }
   .compare-inputs { flex-direction: column; align-items: flex-start; }
 }
 
@@ -381,6 +428,7 @@ footer p { font-size: 0.65rem; color: #888; font-style: italic; font-family: var
   .col-rank { width: 36px; }
   .col-player { width: 110px; }
   .table-wrap { box-shadow: 4px 4px 0 var(--ink); }
+  .bracket-grid { grid-template-columns: 1fr; }
   .records-banner { flex-direction: column; gap: 0.3rem; align-items: center; }
   .tabs { overflow-x: auto; }
 }

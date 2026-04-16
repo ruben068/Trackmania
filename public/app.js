@@ -41,6 +41,7 @@ const dom = {
   compareBtn:   $('compareBtn'),
   compareResult:$('compareResult'),
   statsGrid:    $('statsGrid'),
+  bracketGrid:  $('bracketGrid'),
 };
 
 // ── State ─────────────────────────────────────────────────────
@@ -651,9 +652,62 @@ document.querySelectorAll('.tab').forEach(btn => {
     } else if (activeTab === 'stats') {
       $('panelStats').style.display = '';
       renderStats();
+    } else if (activeTab === 'bracket') {
+      $('panelBracket').style.display = '';
+      renderBracket();
     }
   });
 });
+
+// ── Stage 2 bracket (Round 1 seedings) ────────────────────────
+const STAGE2_SEEDS = {
+  'Match 1': [1, 8, 9, 16, 17, 24, 25, 32, 33, 40, 41, 48, 49, 56, 57, 64, 65, 72, 73, 80, 81, 88, 89, 96, 97],
+  'Match 2': [4, 5, 12, 13, 20, 21, 28, 29, 36, 37, 44, 45, 52, 53, 60, 61, 68, 69, 76, 77, 84, 85, 92, 93, 100],
+  'Match 3': [3, 6, 11, 14, 19, 22, 27, 30, 35, 38, 43, 46, 51, 54, 59, 62, 67, 70, 75, 78, 83, 86, 91, 94, 99],
+  'Match 4': [2, 7, 10, 15, 18, 23, 26, 31, 34, 39, 42, 47, 50, 55, 58, 63, 66, 71, 74, 79, 82, 87, 90, 95, 98],
+};
+
+function renderBracket() {
+  if (!raw) return;
+  // Use combined ranking (complete entries), sorted by total
+  const ranked = [...raw.entries]
+    .sort((a, b) => {
+      if (a.mc !== b.mc) return b.mc - a.mc;
+      return a.sum - b.sum;
+    });
+
+  const frag = document.createDocumentFragment();
+
+  for (const [matchName, seeds] of Object.entries(STAGE2_SEEDS)) {
+    const card = document.createElement('div');
+    card.className = 'match-card';
+    let rows = '';
+    seeds.forEach(seed => {
+      const driver = ranked[seed - 1];
+      if (!driver) {
+        rows += `<tr class="empty">
+          <td class="seed">${seed}</td>
+          <td class="col-player">—</td>
+          <td class="col-time">—</td>
+        </tr>`;
+      } else {
+        rows += `<tr>
+          <td class="seed">${seed}</td>
+          <td class="col-player">${flag(driver.flag)}${esc(driver.name)}</td>
+          <td class="col-time">${fmtTime(driver.sum)}</td>
+        </tr>`;
+      }
+    });
+    card.innerHTML = `
+      <h3>${matchName}</h3>
+      <table class="match-table"><tbody>${rows}</tbody></table>
+    `;
+    frag.appendChild(card);
+  }
+
+  dom.bracketGrid.innerHTML = '';
+  dom.bracketGrid.appendChild(frag);
+}
 
 // ── Fetch ─────────────────────────────────────────────────────
 async function fetchData() {
