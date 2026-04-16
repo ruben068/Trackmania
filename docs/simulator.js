@@ -1,13 +1,12 @@
 // ══════════════════════════════════════════════════════════════
-//  TOURNAMENT PATH SIMULATOR
-//  Interactive Stage 2 knockout simulator.
-//  Click drivers to cycle through outcomes; subsequent rounds
-//  auto-populate based on earlier picks.
+//  TOURNAMENT PATH SIMULATOR — drag-and-drop edition
+//  Placement = position in list. Drag to reorder. Downstream
+//  rounds auto-populate from finishing positions.
 // ══════════════════════════════════════════════════════════════
 (function () {
   'use strict';
 
-  const SIM_KEY = 'rbf-sim-v2';
+  const SIM_KEY = 'rbf-sim-v3';
 
   // Round 1 seed-to-match map (from Appendix D)
   const R1_SEEDS = {
@@ -17,42 +16,43 @@
     3: [2, 7, 10, 15, 18, 23, 26, 31, 34, 39, 42, 47, 50, 55, 58, 63, 66, 71, 74, 79, 82, 87, 90, 95, 98],
   };
 
+  // Zone thresholds per round — index-based, 0-indexed position
+  // R1: P1=0, P2-8=1..7, P9-12=8..11, P13-25=12..24
+  // R2: P1=0, P2-4=1..3, P5-14=4..13
+  // R3: P1-4=0..3, P5-18=4..17
+  // R4: P1=0, P2-14=1..13
   const ROUNDS = {
     r1: {
-      matches: 4,
-      zones: [
-        { key: 'q',   cap: 1,  cls: 'zone-q',   short: 'P1',     desc: 'Qualified' },
-        { key: 'r2',  cap: 7,  cls: 'zone-r2',  short: 'P2-8',   desc: '→ Round 2' },
-        { key: 'r3',  cap: 4,  cls: 'zone-r3',  short: 'P9-12',  desc: '→ Round 3' },
-        { key: 'out', cap: 13, cls: 'zone-out', short: 'P13-25', desc: 'Eliminated' },
-      ],
+      matches: 4, size: 25, name: 'Round 1',
+      zoneFor: i => i === 0 ? 'q' : i < 8 ? 'r2' : i < 12 ? 'r3' : 'out',
     },
     r2: {
-      matches: 2,
-      zones: [
-        { key: 'q',  cap: 1,  cls: 'zone-q',  short: 'P1',    desc: 'Qualified' },
-        { key: 'r4', cap: 3,  cls: 'zone-r4', short: 'P2-4',  desc: '→ Round 4' },
-        { key: 'r3', cap: 10, cls: 'zone-r3', short: 'P5-14', desc: '→ Round 3' },
-      ],
+      matches: 2, size: 14, name: 'Round 2',
+      zoneFor: i => i === 0 ? 'q' : i < 4 ? 'r4' : 'r3',
     },
     r3: {
-      matches: 2,
-      zones: [
-        { key: 'r4',  cap: 4,  cls: 'zone-r4',  short: 'P1-4',   desc: '→ Round 4' },
-        { key: 'out', cap: 14, cls: 'zone-out', short: 'P5-18',  desc: 'Eliminated' },
-      ],
+      matches: 2, size: 18, name: 'Round 3',
+      zoneFor: i => i < 4 ? 'r4' : 'out',
     },
     r4: {
-      matches: 1,
-      zones: [
-        { key: 'q',   cap: 1,  cls: 'zone-q',   short: 'P1',    desc: 'Qualified' },
-        { key: 'out', cap: 13, cls: 'zone-out', short: 'P2-14', desc: 'Eliminated' },
-      ],
+      matches: 1, size: 14, name: 'Round 4',
+      zoneFor: i => i === 0 ? 'q' : 'out',
     },
   };
 
+  const ZONE_META = {
+    q:   { cls: 'zone-q',   label: 'QUALIFIED' },
+    r2:  { cls: 'zone-r2',  label: '→ Round 2' },
+    r3:  { cls: 'zone-r3',  label: '→ Round 3' },
+    r4:  { cls: 'zone-r4',  label: '→ Round 4' },
+    out: { cls: 'zone-out', label: 'Eliminated' },
+  };
+
+  // State: { r1: { m0: [name,...], m1: [...], ... }, r2: {...}, ... }
   let state = { r1: {}, r2: {}, r3: {}, r4: {} };
   let ranked = [];
+  let driverByName = new Map();
+  let sortables = [];
 
   const $ = id => document.getElementById(id);
   const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
@@ -67,300 +67,305 @@
       const s = localStorage.getItem(SIM_KEY);
       if (s) {
         const loaded = JSON.parse(s);
-        state = { r1: loaded.r1 || {}, r2: loaded.r2 || {}, r3: loaded.r3 || {}, r4: loaded.r4 || {} };
+        state = {
+          r1: loaded.r1 || {},
+          r2: loaded.r2 || {},
+          r3: loaded.r3 || {},
+          r4: loaded.r4 || {},
+        };
       }
     } catch {}
   }
-  function resetState() {
-    state = { r1: {}, r2: {}, r3: {}, r4: {} };
-    saveState();
+
+  function seedOf(name) {
+    const i = ranked.findIndex(d => d.name === name);
+    return i === -1 ? 9999 : i + 1;
   }
 
-  // ── Match compositions ─────────────────────────────────────
-  function getR1Matches() {
-    const m = [[], [], [], []];
-    for (let i = 0; i < 4; i++) {
-      for (const seed of R1_SEEDS[i]) {
-        const driver = ranked[seed - 1];
-        if (driver) m[i].push(driver);
-      }
-    }
-    return m;
-  }
-
-  function getR2Matches() {
-    const m = [[], []];
-    const r1 = getR1Matches();
-    for (let i = 0; i < 4; i++) {
-      for (const d of r1[i]) {
-        if (state.r1[d.name] === 'r2') {
-          m[i < 2 ? 0 : 1].push(d);
-        }
-      }
-    }
-    return m;
-  }
-
-  function getR3Matches() {
-    const m = [[], []];
-    const r1 = getR1Matches();
-    const r2 = getR2Matches();
-    // R1 P9-12: M1+M2 → R3 M1, M3+M4 → R3 M2
-    for (let i = 0; i < 4; i++) {
-      for (const d of r1[i]) {
-        if (state.r1[d.name] === 'r3') m[i < 2 ? 0 : 1].push(d);
-      }
-    }
-    // R2 P5-14: M1 → R3 M1, M2 → R3 M2
-    for (let i = 0; i < 2; i++) {
-      for (const d of r2[i]) {
-        if (state.r2[d.name] === 'r3') m[i].push(d);
-      }
-    }
-    return m;
-  }
-
-  function getR4Matches() {
-    const match = [];
-    const r2 = getR2Matches();
-    const r3 = getR3Matches();
-    for (const ms of r2) for (const d of ms) if (state.r2[d.name] === 'r4') match.push(d);
-    for (const ms of r3) for (const d of ms) if (state.r3[d.name] === 'r4') match.push(d);
-    return [match];
-  }
-
-  function getRoundMatches(round) {
-    if (round === 'r1') return getR1Matches();
-    if (round === 'r2') return getR2Matches();
-    if (round === 'r3') return getR3Matches();
-    if (round === 'r4') return getR4Matches();
-    return [];
-  }
-
-  // ── Validation ─────────────────────────────────────────────
-  function isRoundComplete(round) {
-    const matches = getRoundMatches(round);
-    const zones = ROUNDS[round].zones;
-    for (const ms of matches) {
-      if (ms.length === 0) return false;
-      const counts = {};
-      zones.forEach(z => counts[z.key] = 0);
-      for (const d of ms) {
-        const z = state[round][d.name];
-        if (z && counts[z] !== undefined) counts[z]++;
-      }
-      for (const z of zones) {
-        if (counts[z.key] !== z.cap) return false;
-      }
-    }
-    return true;
-  }
-
-  function isRoundUnlocked(round) {
-    if (round === 'r1') return true;
-    const prev = round === 'r2' ? 'r1' : round === 'r3' ? 'r2' : 'r3';
-    return isRoundComplete(prev);
-  }
-
-  function cleanDownstream(fromRound) {
-    const order = ['r1', 'r2', 'r3', 'r4'];
-    const fromIdx = order.indexOf(fromRound);
-    for (let i = fromIdx + 1; i < order.length; i++) {
-      const r = order[i];
-      const matches = getRoundMatches(r);
-      const inPool = new Set();
-      for (const ms of matches) for (const d of ms) inPool.add(d.name);
-      for (const name of Object.keys(state[r])) {
-        if (!inPool.has(name)) delete state[r][name];
-      }
+  // ── Seed-based initial / auto-fill ─────────────────────────
+  function autoFillR1() {
+    state.r1 = {};
+    for (let m = 0; m < 4; m++) {
+      const names = R1_SEEDS[m]
+        .map(seed => ranked[seed - 1])
+        .filter(Boolean)
+        .map(d => d.name);
+      state.r1['m' + m] = names;
     }
   }
 
-  // ── Interaction ────────────────────────────────────────────
-  function cycleDriver(round, driverName) {
-    const zones = ROUNDS[round].zones;
-    const current = state[round][driverName];
-    const idx = zones.findIndex(z => z.key === current);
-    const nextIdx = idx === -1 ? 0 : (idx + 1) % zones.length;
-    state[round][driverName] = zones[nextIdx].key;
-    cleanDownstream(round);
-    saveState();
-    renderAll();
+  // Merge downstream: preserve existing order for drivers still in pool,
+  // append newcomers in seed order at the end, drop missing drivers.
+  function mergePreserve(existing, newPool) {
+    const poolSet = new Set(newPool);
+    const kept = (existing || []).filter(n => poolSet.has(n));
+    const keptSet = new Set(kept);
+    const newcomers = newPool.filter(n => !keptSet.has(n));
+    newcomers.sort((a, b) => seedOf(a) - seedOf(b));
+    return kept.concat(newcomers);
+  }
+
+  function rebuildR2() {
+    // R2 M0 pool = R1 M0 P2-8 + R1 M1 P2-8
+    // R2 M1 pool = R1 M2 P2-8 + R1 M3 P2-8
+    const pools = [[], []];
+    for (let m = 0; m < 4; m++) {
+      const arr = state.r1['m' + m] || [];
+      const p28 = arr.slice(1, 8);
+      const target = m < 2 ? 0 : 1;
+      pools[target].push(...p28);
+    }
+    state.r2.m0 = mergePreserve(state.r2.m0, pools[0]);
+    state.r2.m1 = mergePreserve(state.r2.m1, pools[1]);
+  }
+
+  function rebuildR3() {
+    // R3 M0 pool = R1 M0 P9-12 + R1 M1 P9-12 + R2 M0 P5-14
+    // R3 M1 pool = R1 M2 P9-12 + R1 M3 P9-12 + R2 M1 P5-14
+    const pools = [[], []];
+    for (let m = 0; m < 4; m++) {
+      const arr = state.r1['m' + m] || [];
+      const p912 = arr.slice(8, 12);
+      const target = m < 2 ? 0 : 1;
+      pools[target].push(...p912);
+    }
+    for (let m = 0; m < 2; m++) {
+      const arr = state.r2['m' + m] || [];
+      const p514 = arr.slice(4, 14);
+      pools[m].push(...p514);
+    }
+    state.r3.m0 = mergePreserve(state.r3.m0, pools[0]);
+    state.r3.m1 = mergePreserve(state.r3.m1, pools[1]);
+  }
+
+  function rebuildR4() {
+    // R4 pool = R2 P2-4 + R3 P1-4
+    const pool = [];
+    for (let m = 0; m < 2; m++) {
+      const arr = state.r2['m' + m] || [];
+      pool.push(...arr.slice(1, 4));
+    }
+    for (let m = 0; m < 2; m++) {
+      const arr = state.r3['m' + m] || [];
+      pool.push(...arr.slice(0, 4));
+    }
+    state.r4.m0 = mergePreserve(state.r4.m0, pool);
+  }
+
+  function rebuildDownstream(from) {
+    if (from === 'r1') { rebuildR2(); rebuildR3(); rebuildR4(); }
+    else if (from === 'r2') { rebuildR3(); rebuildR4(); }
+    else if (from === 'r3') { rebuildR4(); }
   }
 
   function autoFill() {
-    state = { r1: {}, r2: {}, r3: {}, r4: {} };
-
-    // R1: per match, rank by current Stage 1 seed
-    const r1 = getR1Matches();
-    for (let m = 0; m < 4; m++) {
-      r1[m].forEach((d, i) => {
-        if (i === 0) state.r1[d.name] = 'q';
-        else if (i <= 7) state.r1[d.name] = 'r2';
-        else if (i <= 11) state.r1[d.name] = 'r3';
-        else state.r1[d.name] = 'out';
-      });
-    }
-    // R2: P1 = highest seed, P2-4 = next 3, P5-14 = rest
-    const r2 = getR2Matches();
-    for (let m = 0; m < 2; m++) {
-      const sorted = r2[m].slice().sort((a, b) => seedOf(a) - seedOf(b));
-      sorted.forEach((d, i) => {
-        if (i === 0) state.r2[d.name] = 'q';
-        else if (i <= 3) state.r2[d.name] = 'r4';
-        else state.r2[d.name] = 'r3';
-      });
-    }
-    // R3: top 4 by seed go to R4
-    const r3 = getR3Matches();
-    for (let m = 0; m < 2; m++) {
-      const sorted = r3[m].slice().sort((a, b) => seedOf(a) - seedOf(b));
-      sorted.forEach((d, i) => {
-        if (i <= 3) state.r3[d.name] = 'r4';
-        else state.r3[d.name] = 'out';
-      });
-    }
-    // R4: P1 = best seed
-    const r4 = getR4Matches();
-    const sorted4 = r4[0].slice().sort((a, b) => seedOf(a) - seedOf(b));
-    sorted4.forEach((d, i) => {
-      state.r4[d.name] = i === 0 ? 'q' : 'out';
-    });
-
+    autoFillR1();
+    state.r2 = {}; state.r3 = {}; state.r4 = {};
+    rebuildR2(); rebuildR3(); rebuildR4();
     saveState();
     renderAll();
   }
 
-  function seedOf(d) {
-    return ranked.findIndex(r => r.name === d.name) + 1;
+  function reset() {
+    state = { r1: {}, r2: {}, r3: {}, r4: {} };
+    autoFill();
   }
 
   // ── Rendering ──────────────────────────────────────────────
   function renderAll() {
-    for (const r of ['r1', 'r2', 'r3', 'r4']) renderRound(r);
+    // Kill existing sortable instances
+    sortables.forEach(s => { try { s.destroy(); } catch {} });
+    sortables = [];
+
+    for (const round of ['r1', 'r2', 'r3', 'r4']) renderRound(round);
     renderFinalists();
     updateProgress();
+    attachSortables();
   }
 
   function renderRound(round) {
     const grid = $(`sim${round.toUpperCase()}Grid`);
     if (!grid) return;
-    const wrap = grid.closest('.sim-round');
-    const unlocked = isRoundUnlocked(round);
-    wrap.classList.toggle('locked', !unlocked);
 
-    if (!unlocked) {
-      grid.innerHTML = '<div class="sim-locked">Complete the previous round first</div>';
-      return;
-    }
-
-    const matches = getRoundMatches(round);
     const meta = ROUNDS[round];
     grid.innerHTML = '';
 
     for (let m = 0; m < meta.matches; m++) {
+      const names = state[round]['m' + m] || [];
       const card = document.createElement('div');
       card.className = 'sim-match-card';
       card.innerHTML = `
         <div class="sim-match-header">
           <h4>Match ${m + 1}</h4>
-          ${renderZoneCounts(round, m)}
+          <div class="sim-match-legend">${renderLegend(round)}</div>
         </div>
-        <div class="sim-drivers">
-          ${matches[m].map(d => renderDriverCard(round, d)).join('') || '<div class="sim-empty">No drivers yet</div>'}
-        </div>
+        <ol class="sim-drivers" data-round="${round}" data-match="m${m}">
+          ${names.map((n, i) => renderDriverLi(round, n, i)).join('') || '<li class="sim-empty">No drivers yet</li>'}
+        </ol>
       `;
       grid.appendChild(card);
     }
   }
 
-  function renderZoneCounts(round, matchIdx) {
-    const matches = getRoundMatches(round);
-    const driverNames = matches[matchIdx].map(d => d.name);
-    const zones = ROUNDS[round].zones;
-    return `<div class="zone-counts">${zones.map(z => {
-      const count = driverNames.filter(n => state[round][n] === z.key).length;
-      const cls = count === z.cap ? 'exact' : count > z.cap ? 'over' : '';
-      return `<span class="zone-count ${z.cls} ${cls}">${z.short} ${count}/${z.cap}</span>`;
-    }).join('')}</div>`;
+  function renderLegend(round) {
+    const zones = new Set();
+    const boundaries = [];
+    const zoneForFn = ROUNDS[round].zoneFor;
+    for (let i = 0; i < ROUNDS[round].size; i++) {
+      const z = zoneForFn(i);
+      if (!zones.has(z)) {
+        zones.add(z);
+        boundaries.push({ zone: z, start: i });
+      }
+    }
+    return boundaries.map(b => {
+      const meta = ZONE_META[b.zone];
+      return `<span class="legend-chip ${meta.cls}">${meta.label}</span>`;
+    }).join('');
   }
 
-  function renderDriverCard(round, driver) {
-    const zone = state[round][driver.name];
-    const zoneMeta = ROUNDS[round].zones.find(z => z.key === zone);
-    const cls = zoneMeta ? zoneMeta.cls : '';
-    const badge = zoneMeta ? `<span class="zone-badge ${zoneMeta.cls}">${zoneMeta.short}</span>` : '<span class="zone-badge unset">—</span>';
-    const s = seedOf(driver);
-    return `<div class="sim-driver ${cls}" data-round="${round}" data-name="${esc(driver.name)}">
-      <span class="sim-seed">#${s}</span>
-      <span class="sim-driver-name">${flag(driver.flag)}${esc(driver.name)}</span>
-      ${badge}
-    </div>`;
+  function renderDriverLi(round, name, i) {
+    const driver = driverByName.get(name);
+    if (!driver) return '';
+    const zone = ROUNDS[round].zoneFor(i);
+    const cls = ZONE_META[zone].cls;
+    const position = i + 1;
+    return `<li class="sim-driver ${cls}" data-name="${esc(name)}">
+      <span class="sim-pos">P${position}</span>
+      <span class="sim-seed">#${seedOf(name)}</span>
+      <span class="sim-driver-name">${flag(driver.flag)}${esc(name)}</span>
+      <span class="sim-handle">≡</span>
+    </li>`;
+  }
+
+  function attachSortables() {
+    if (typeof Sortable === 'undefined') {
+      console.warn('Sortable.js not loaded');
+      return;
+    }
+    document.querySelectorAll('#panelSimulator .sim-drivers').forEach(ol => {
+      const round = ol.dataset.round;
+      const match = ol.dataset.match;
+      if (!round || !match) return;
+      const s = Sortable.create(ol, {
+        animation: 150,
+        handle: '.sim-handle',
+        ghostClass: 'sim-ghost',
+        chosenClass: 'sim-chosen',
+        dragClass: 'sim-drag',
+        forceFallback: true,
+        fallbackOnBody: true,
+        onEnd: () => {
+          const names = [...ol.querySelectorAll('.sim-driver')].map(li => li.dataset.name);
+          state[round][match] = names;
+          rebuildDownstream(round);
+          saveState();
+          renderAll();
+        },
+      });
+      sortables.push(s);
+    });
   }
 
   // ── Finalists ──────────────────────────────────────────────
   function getQualified() {
     const list = [];
-    const r1 = getR1Matches();
+    // R1 P1s (4)
     for (let m = 0; m < 4; m++) {
-      for (const d of r1[m]) if (state.r1[d.name] === 'q') list.push({ ...d, via: `R1 M${m + 1}` });
+      const arr = state.r1['m' + m] || [];
+      if (arr[0]) list.push({ name: arr[0], via: `R1 M${m + 1}` });
     }
-    const r2 = getR2Matches();
+    // R2 P1s (2)
     for (let m = 0; m < 2; m++) {
-      for (const d of r2[m]) if (state.r2[d.name] === 'q') list.push({ ...d, via: `R2 M${m + 1}` });
+      const arr = state.r2['m' + m] || [];
+      if (arr[0]) list.push({ name: arr[0], via: `R2 M${m + 1}` });
     }
-    const r4 = getR4Matches();
-    for (const d of r4[0]) if (state.r4[d.name] === 'q') list.push({ ...d, via: 'R4' });
+    // R4 P1 (1)
+    const r4 = state.r4.m0 || [];
+    if (r4[0]) list.push({ name: r4[0], via: 'R4' });
     return list;
+  }
+
+  function advancementRank(name) {
+    const r4 = state.r4.m0 || [];
+    const r4i = r4.indexOf(name);
+    if (r4i === 0) return 100;
+    if (r4i > 0) return 90 - r4i;
+
+    for (let m = 0; m < 2; m++) {
+      const r3 = state.r3['m' + m] || [];
+      const r3i = r3.indexOf(name);
+      if (r3i >= 0) return 70 - r3i;
+    }
+    for (let m = 0; m < 2; m++) {
+      const r2 = state.r2['m' + m] || [];
+      const r2i = r2.indexOf(name);
+      if (r2i >= 0) return 50 - r2i;
+    }
+    for (let m = 0; m < 4; m++) {
+      const r1 = state.r1['m' + m] || [];
+      const r1i = r1.indexOf(name);
+      if (r1i >= 0) return 25 - r1i;
+    }
+    return 0;
+  }
+
+  function furthestRoundLabel(name) {
+    if ((state.r4.m0 || []).includes(name)) return 'Round 4';
+    for (let m = 0; m < 2; m++) if ((state.r3['m' + m] || []).includes(name)) return 'Round 3';
+    for (let m = 0; m < 2; m++) if ((state.r2['m' + m] || []).includes(name)) return 'Round 2';
+    for (let m = 0; m < 4; m++) if ((state.r1['m' + m] || []).includes(name)) return 'Round 1';
+    return '—';
   }
 
   function renderFinalists() {
     const list = $('simFinalistList');
     const notice = $('simDutchNotice');
     const qualified = getQualified();
-    const r4m = getR4Matches()[0];
 
     let html = '';
     qualified.forEach((q, i) => {
+      const d = driverByName.get(q.name);
       html += `<div class="finalist-card">
         <span class="finalist-num">${i + 1}</span>
-        <span class="finalist-name">${flag(q.flag)}${esc(q.name)}</span>
+        <span class="finalist-name">${d ? flag(d.flag) : ''}${esc(q.name)}</span>
         <span class="finalist-via">${q.via}</span>
       </div>`;
     });
 
-    // 8th slot logic
-    const r4Complete = isRoundComplete('r4');
+    // 8th slot
     let eighthHtml = '';
-    let dutchMsg = '';
+    let msg = '';
+    const r4 = state.r4.m0 || [];
 
-    if (qualified.length === 7 && r4Complete) {
-      const hasDutch = qualified.some(q => q.flag === 'nl');
-      const anyDutchPlayed = [...Object.keys(state.r1)].some(name => {
-        const d = ranked.find(r => r.name === name);
-        return d && d.flag === 'nl';
+    if (qualified.length === 7 && r4.length === 14) {
+      const hasDutch = qualified.some(q => {
+        const d = driverByName.get(q.name); return d && d.flag === 'nl';
+      });
+      const anyDutchInR1 = Object.values(state.r1).flat().some(n => {
+        const d = driverByName.get(n); return d && d.flag === 'nl';
       });
 
-      if (hasDutch || !anyDutchPlayed) {
-        // 8th = P2 of R4
-        const r4Out = r4m.filter(d => state.r4[d.name] === 'out');
-        const p2 = r4Out[0]; // Can't know exact P2 without result ordering
+      if (hasDutch || !anyDutchInR1) {
+        // 8th = P2 of R4 (index 1)
+        const p2Name = r4[1];
+        const p2 = driverByName.get(p2Name);
         if (p2) {
           eighthHtml = `<div class="finalist-card">
             <span class="finalist-num">8</span>
             <span class="finalist-name">${flag(p2.flag)}${esc(p2.name)}</span>
             <span class="finalist-via">R4 P2</span>
           </div>`;
-          dutchMsg = hasDutch
+          msg = hasDutch
             ? 'A Dutch driver qualified via Round 1-4 — 8th slot goes to P2 of Round 4.'
             : 'No Dutch drivers in Stage 2 — 8th slot goes to P2 of Round 4.';
         }
       } else {
-        // Round 5 needed. Pick up to 4 Dutch by furthest advancement
-        const dutchParticipants = ranked.filter(d => d.flag === 'nl' && state.r1[d.name] !== undefined);
-        // Rank by: R4 first, then R3, then R1
-        dutchParticipants.sort((a, b) => advancementScore(b) - advancementScore(a));
-        const top4 = dutchParticipants.slice(0, 4);
+        // Round 5 Dutch qualification
+        const dutchInSim = [...Object.values(state.r1).flat()]
+          .filter(n => { const d = driverByName.get(n); return d && d.flag === 'nl'; });
+        dutchInSim.sort((a, b) => advancementRank(b) - advancementRank(a));
+        const top4 = dutchInSim.slice(0, 4);
 
         eighthHtml = `<div class="finalist-card round5">
           <span class="finalist-num">8</span>
@@ -369,20 +374,22 @@
         </div>`;
         if (top4.length > 0) {
           eighthHtml += `<div class="round5-list">
-            ${top4.map((d, i) => `<div class="round5-driver">
-              <span class="r5-num">${i + 1}</span>
-              ${flag(d.flag)}${esc(d.name)}
-              <span class="r5-via">furthest: ${advancementLabel(d)}</span>
-            </div>`).join('')}
+            ${top4.map((name, i) => {
+              const d = driverByName.get(name);
+              return `<div class="round5-driver">
+                <span class="r5-num">${i + 1}</span>
+                ${flag(d && d.flag)}${esc(name)}
+                <span class="r5-via">furthest: ${furthestRoundLabel(name)}</span>
+              </div>`;
+            }).join('')}
           </div>`;
         }
-        dutchMsg = 'No Dutch qualified in Round 1-4 — Round 5 Dutch Qualification needed.';
+        msg = 'No Dutch qualified in Round 1-4 — Round 5 Dutch Qualification needed.';
       }
     }
 
     html += eighthHtml;
 
-    // Fill empty slots
     const totalShown = qualified.length + (eighthHtml ? 1 : 0);
     for (let i = totalShown; i < 8; i++) {
       html += `<div class="finalist-card empty">
@@ -393,84 +400,55 @@
     }
 
     list.innerHTML = html;
-
-    if (dutchMsg) {
-      notice.textContent = dutchMsg;
-      notice.style.display = '';
-    } else {
-      notice.style.display = 'none';
-    }
-  }
-
-  function advancementScore(d) {
-    if (state.r4[d.name] === 'q') return 100;
-    if (state.r4[d.name] === 'out') return 80;
-    if (state.r3[d.name] === 'r4') return 70;
-    if (state.r3[d.name] === 'out') return 50;
-    if (state.r2[d.name] === 'q') return 90;
-    if (state.r2[d.name] === 'r4') return 60;
-    if (state.r2[d.name] === 'r3') return 40;
-    if (state.r1[d.name] === 'q') return 95;
-    if (state.r1[d.name] === 'r2') return 30;
-    if (state.r1[d.name] === 'r3') return 20;
-    if (state.r1[d.name] === 'out') return 10;
-    return 0;
-  }
-
-  function advancementLabel(d) {
-    if (state.r4[d.name]) return 'Round 4';
-    if (state.r3[d.name]) return 'Round 3';
-    if (state.r2[d.name]) return 'Round 2';
-    if (state.r1[d.name]) return 'Round 1';
-    return '—';
+    if (msg) { notice.textContent = msg; notice.style.display = ''; }
+    else { notice.style.display = 'none'; }
   }
 
   function updateProgress() {
-    const counts = [];
-
-    const r1 = getR1Matches();
-    const r1Total = r1.reduce((s, m) => s + m.length, 0);
-    const r1Set = Object.keys(state.r1).filter(n => r1.flat().some(d => d.name === n)).length;
-    $('simR1Count').textContent = `${r1Set}/${r1Total}`;
-    counts.push(r1Set === r1Total);
-
-    for (const round of ['r2', 'r3', 'r4']) {
-      const el = $(`sim${round.toUpperCase()}Count`);
-      if (!isRoundUnlocked(round)) { el.textContent = 'locked'; continue; }
-      const ms = getRoundMatches(round);
-      const total = ms.reduce((s, m) => s + m.length, 0);
-      const set = Object.keys(state[round]).length;
-      el.textContent = `${set}/${total}`;
-    }
+    const counts = {
+      r1: (Object.values(state.r1).flat() || []).length,
+      r2: (Object.values(state.r2).flat() || []).length,
+      r3: (Object.values(state.r3).flat() || []).length,
+      r4: (Object.values(state.r4).flat() || []).length,
+    };
+    $('simR1Count').textContent = `${counts.r1} drivers`;
+    $('simR2Count').textContent = `${counts.r2} drivers`;
+    $('simR3Count').textContent = `${counts.r3} drivers`;
+    $('simR4Count').textContent = `${counts.r4} drivers`;
 
     const qualified = getQualified();
-    const final = qualified.length + (isRoundComplete('r4') ? 1 : 0);
+    const final = qualified.length + ((state.r4.m0 || []).length === 14 ? 1 : 0);
     $('simFinalCount').textContent = `${final}/8`;
   }
 
-  // ── Init & events ──────────────────────────────────────────
+  // ── Init ───────────────────────────────────────────────────
   function init() {
     if (!window.getSimData || !window.getSimData()) return;
     const data = window.getSimData();
     ranked = [...data.entries]
       .sort((a, b) => a.mc !== b.mc ? b.mc - a.mc : a.sum - b.sum)
       .slice(0, 100);
+    driverByName = new Map(ranked.map(d => [d.name, d]));
+
     loadState();
-    renderAll();
+    // If state empty, auto-fill from seed
+    if (!state.r1 || Object.keys(state.r1).length === 0) {
+      autoFill();
+    } else {
+      // Make sure downstream rounds exist & are in sync
+      rebuildR2(); rebuildR3(); rebuildR4();
+      renderAll();
+    }
   }
 
   function wire() {
-    document.addEventListener('click', e => {
-      const driver = e.target.closest('.sim-driver');
-      if (driver && driver.closest('#panelSimulator')) {
-        cycleDriver(driver.dataset.round, driver.dataset.name);
-      }
-    });
     const a = $('simAutoFill');
-    if (a) a.addEventListener('click', autoFill);
+    if (a) a.addEventListener('click', () => {
+      if (confirm('Reset simulator to seed-based predicted order?')) autoFill();
+    });
     const r = $('simReset');
     if (r) r.addEventListener('click', () => {
-      if (confirm('Reset all simulator choices?')) { resetState(); renderAll(); }
+      if (confirm('Reset all simulator choices?')) reset();
     });
   }
 
@@ -479,13 +457,9 @@
     else renderAll();
   };
 
-  // Bootstrap: wait for data
   function tryInit() {
-    if (window.getSimData && window.getSimData()) {
-      init();
-    } else {
-      setTimeout(tryInit, 400);
-    }
+    if (window.getSimData && window.getSimData()) init();
+    else setTimeout(tryInit, 400);
   }
 
   wire();

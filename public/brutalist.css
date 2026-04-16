@@ -555,57 +555,105 @@ td.loser { color: #aaa; }
 .zone-count.exact { border-color: white; background: rgba(255,255,255,0.25); }
 .zone-count.over { background: var(--red); border-color: white; }
 
+.sim-match-legend {
+  display: flex; gap: 0.25rem; flex-wrap: wrap;
+}
+.legend-chip {
+  font-family: var(--mono); font-size: 0.6rem; font-weight: 700;
+  padding: 0.1rem 0.35rem; border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.1);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+
 .sim-drivers {
   padding: 0.3rem;
-  display: grid; grid-template-columns: repeat(2, 1fr);
-  gap: 0.25rem;
+  list-style: none;
+  display: flex; flex-direction: column; gap: 0.2rem;
+  counter-reset: none;
+  margin: 0;
 }
-[data-round="r4"] .sim-drivers { grid-template-columns: repeat(3, 1fr); }
 
 .sim-driver {
-  display: flex; align-items: center; gap: 0.35rem;
-  padding: 0.3rem 0.45rem; border: 2px solid var(--ink);
-  background: var(--bg); cursor: pointer;
-  font-size: 0.75rem; font-weight: 600;
-  transition: all 0.08s;
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.4rem 0.55rem; border: 2px solid var(--ink);
+  background: var(--bg); cursor: grab;
+  font-size: 0.8rem; font-weight: 600;
+  transition: transform 0.08s, box-shadow 0.08s;
+  user-select: none;
 }
 .sim-driver:hover {
   transform: translate(1px, 1px);
   box-shadow: -2px -2px 0 var(--ink);
 }
-.sim-driver:active { transform: translate(2px, 2px); }
+.sim-driver:active { cursor: grabbing; }
+
+.sim-driver .sim-pos {
+  font-family: var(--mono); font-size: 0.75rem;
+  font-weight: 900; min-width: 34px;
+  padding: 0.1rem 0.3rem; background: rgba(0,0,0,0.15);
+  border: 1px solid rgba(0,0,0,0.3);
+  text-align: center;
+}
 .sim-driver .sim-seed {
   font-family: var(--mono); font-size: 0.65rem;
-  color: #999; font-weight: 700; min-width: 24px;
+  opacity: 0.7; font-weight: 700; min-width: 28px;
 }
 .sim-driver .sim-driver-name {
   flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .sim-driver .player-flag {
-  width: 14px; height: 10px; margin-right: 0.3rem;
+  width: 16px; height: 12px; margin-right: 0.35rem;
 }
-.zone-badge {
-  font-family: var(--mono); font-size: 0.6rem; font-weight: 700;
-  padding: 0.1rem 0.35rem; white-space: nowrap;
+.sim-driver .sim-handle {
+  font-size: 1.1rem; opacity: 0.5; cursor: grab; padding: 0 0.2rem;
+  font-weight: 700;
 }
-.zone-badge.unset { color: #aaa; background: transparent; border: 1px dashed #ccc; }
 
-/* Zone colors */
-.zone-q { background: #4ade80 !important; color: white !important; border-color: #166534 !important; }
-.zone-r2 { background: #60a5fa !important; color: white !important; border-color: #1e40af !important; }
-.zone-r3 { background: #fb923c !important; color: white !important; border-color: #9a3412 !important; }
-.zone-r4 { background: #a855f7 !important; color: white !important; border-color: #6b21a8 !important; }
-.zone-out { background: #78716c !important; color: white !important; border-color: #1c1917 !important; opacity: 0.7; }
-
-.sim-driver.zone-q, .sim-driver.zone-r2, .sim-driver.zone-r3,
-.sim-driver.zone-r4, .sim-driver.zone-out {
-  color: white;
+/* Drag states */
+.sim-ghost {
+  opacity: 0.3; background: var(--yellow) !important;
 }
-.sim-driver.zone-q .sim-seed,
-.sim-driver.zone-r2 .sim-seed,
-.sim-driver.zone-r3 .sim-seed,
-.sim-driver.zone-r4 .sim-seed,
-.sim-driver.zone-out .sim-seed { color: rgba(255,255,255,0.7); }
+.sim-chosen {
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.sim-drag {
+  transform: rotate(1deg);
+  box-shadow: 6px 6px 0 var(--ink);
+  z-index: 1000;
+}
+
+/* Zone colors for legend chips */
+.legend-chip.zone-q { background: #4ade80; color: #0f3d1f; border-color: #166534; }
+.legend-chip.zone-r2 { background: #93c5fd; color: #0f2a6b; border-color: #1e40af; }
+.legend-chip.zone-r3 { background: #fdba74; color: #5b2410; border-color: #9a3412; }
+.legend-chip.zone-r4 { background: #d8b4fe; color: #3b1864; border-color: #6b21a8; }
+.legend-chip.zone-out { background: #d6d3d1; color: #292524; border-color: #78716c; }
+
+/* Sim-driver row colors per zone */
+.sim-driver.zone-q {
+  background: #bbf7d0; border-color: #166534;
+}
+.sim-driver.zone-q .sim-pos { background: #166534; color: white; border-color: #0a2a14; }
+
+.sim-driver.zone-r2 {
+  background: #bfdbfe; border-color: #1e40af;
+}
+.sim-driver.zone-r2 .sim-pos { background: #1e40af; color: white; border-color: #0c1f5c; }
+
+.sim-driver.zone-r3 {
+  background: #fed7aa; border-color: #9a3412;
+}
+.sim-driver.zone-r3 .sim-pos { background: #9a3412; color: white; border-color: #471a06; }
+
+.sim-driver.zone-r4 {
+  background: #e9d5ff; border-color: #6b21a8;
+}
+.sim-driver.zone-r4 .sim-pos { background: #6b21a8; color: white; border-color: #330d51; }
+
+.sim-driver.zone-out {
+  background: #e7e5e4; border-color: #78716c; opacity: 0.75;
+}
+.sim-driver.zone-out .sim-pos { background: #57534e; color: white; border-color: #1c1917; }
 
 .sim-empty {
   padding: 1rem; text-align: center; color: #999;

@@ -174,7 +174,7 @@
     <div class="tab-panel" id="panelSimulator" style="display:none">
       <div class="sim-intro">
         <h2>Tournament Path Simulator</h2>
-        <p>Click any driver to cycle through outcomes. Subsequent rounds auto-fill based on your choices. Start with <strong>Auto-fill by seed</strong> to see the predicted path, then tweak from there.</p>
+        <p>Starts with the current Stage 1 ranking as predicted placement. <strong>Drag any driver up or down</strong> to change the match outcome. Subsequent rounds auto-populate based on the finishing positions.</p>
         <div class="sim-controls">
           <button id="simAutoFill" class="sim-btn primary">AUTO-FILL BY SEED</button>
           <button id="simReset" class="sim-btn">RESET</button>
@@ -231,6 +231,7 @@
     <p><a href="https://www.redbull.com/int-en/events/red-bull-faster/" target="_blank" rel="noopener" class="footer-link">Official Red Bull Faster event page →</a></p>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <script src="app.js"></script>
   <script src="simulator.js"></script>
 </body>
