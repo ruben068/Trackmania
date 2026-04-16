@@ -339,7 +339,15 @@ td.loser { color: #aaa; }
 }
 .bracket-intro p {
   font-family: var(--serif); font-style: italic; font-size: 0.9rem; color: #555;
+  margin-bottom: 0.3rem;
 }
+.intro-link {
+  font-style: normal; font-weight: 700; color: var(--red);
+  text-decoration: none; font-family: var(--sans); font-size: 0.8rem;
+  letter-spacing: 0.05em; border-bottom: 2px solid var(--red);
+  padding-bottom: 1px;
+}
+.intro-link:hover { background: var(--red); color: white; }
 
 .bracket-grid {
   display: grid; grid-template-columns: repeat(4, 1fr);
@@ -396,7 +404,13 @@ footer {
   padding: 1.2rem 2rem; border-top: var(--border-thick);
   background: var(--paper); text-align: center;
 }
-footer p { font-size: 0.65rem; color: #888; font-style: italic; font-family: var(--serif); }
+footer p { font-size: 0.65rem; color: #888; font-style: italic; font-family: var(--serif); margin-bottom: 0.2rem; }
+.footer-link {
+  color: var(--red); font-style: normal; font-weight: 700;
+  text-decoration: none; font-family: var(--sans); font-size: 0.7rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.footer-link:hover { text-decoration: underline; }
 
 /* ── Theme switcher ───────────────────────────────────────── */
 .theme-switcher { display: flex; gap: 0.3rem; margin-left: 0.5rem; }
