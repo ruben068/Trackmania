@@ -526,7 +526,7 @@ td.loser { color: #aaa; }
 .sim-matches {
   display: grid; gap: 0.8rem;
 }
-[data-round="r1"] .sim-matches { grid-template-columns: repeat(2, 1fr); }
+[data-round="r1"] .sim-matches { grid-template-columns: repeat(4, 1fr); }
 [data-round="r2"] .sim-matches { grid-template-columns: repeat(2, 1fr); }
 [data-round="r3"] .sim-matches { grid-template-columns: repeat(2, 1fr); }
 [data-round="r4"] .sim-matches { grid-template-columns: 1fr; }
@@ -767,7 +767,7 @@ footer p { font-size: 0.65rem; color: #888; font-style: italic; font-family: var
   .stats-grid { grid-template-columns: 1fr; }
   .stat-card.wide { grid-column: 1; }
   .bracket-grid { grid-template-columns: 1fr 1fr; }
-  [data-round="r1"] .sim-matches,
+  [data-round="r1"] .sim-matches { grid-template-columns: repeat(2, 1fr); }
   [data-round="r2"] .sim-matches,
   [data-round="r3"] .sim-matches { grid-template-columns: 1fr; }
   .sim-drivers { grid-template-columns: repeat(2, 1fr) !important; }
