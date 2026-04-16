@@ -658,6 +658,9 @@ document.querySelectorAll('.tab').forEach(btn => {
     } else if (activeTab === 'bracket') {
       $('panelBracket').style.display = '';
       renderBracket();
+    } else if (activeTab === 'simulator') {
+      $('panelSimulator').style.display = '';
+      if (window.renderSimulator) window.renderSimulator();
     }
   });
 });
@@ -767,6 +770,9 @@ async function fetchData() {
     dom.players.textContent = raw.total || raw.entries.length;
     fetchedAt = Date.now();
     dom.updated.textContent = 'just now';
+
+    // Expose data for simulator
+    window.getSimData = () => raw;
 
     // Save current ranks before re-sorting for movement tracking
     if (sorted && sorted.length > 0) {

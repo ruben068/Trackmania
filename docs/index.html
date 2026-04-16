@@ -70,6 +70,7 @@
     <button class="tab" data-tab="compare">Compare</button>
     <button class="tab" data-tab="stats">Stats</button>
     <button class="tab" data-tab="bracket">Stage 2</button>
+    <button class="tab" data-tab="simulator">Simulator</button>
   </div>
 
   <!-- Toolbar (leaderboard tab) -->
@@ -169,6 +170,48 @@
       <div class="stats-grid" id="statsGrid"></div>
     </div>
 
+    <!-- Simulator tab -->
+    <div class="tab-panel" id="panelSimulator" style="display:none">
+      <div class="sim-intro">
+        <h2>Tournament Path Simulator</h2>
+        <p>Click any driver to cycle through outcomes. Subsequent rounds auto-fill based on your choices. Start with <strong>Auto-fill by seed</strong> to see the predicted path, then tweak from there.</p>
+        <div class="sim-controls">
+          <button id="simAutoFill" class="sim-btn primary">AUTO-FILL BY SEED</button>
+          <button id="simReset" class="sim-btn">RESET</button>
+        </div>
+        <div class="sim-progress">
+          <div class="sim-progress-item"><span>Round 1</span><strong id="simR1Count">—</strong></div>
+          <div class="sim-progress-item"><span>Round 2</span><strong id="simR2Count">—</strong></div>
+          <div class="sim-progress-item"><span>Round 3</span><strong id="simR3Count">—</strong></div>
+          <div class="sim-progress-item"><span>Round 4</span><strong id="simR4Count">—</strong></div>
+          <div class="sim-progress-item highlight"><span>Finalists</span><strong id="simFinalCount">0/8</strong></div>
+        </div>
+      </div>
+
+      <div class="sim-round" data-round="r1">
+        <h3>Round 1<span class="round-sub"> — 4 matches × 25 players</span></h3>
+        <div class="sim-matches" id="simR1Grid"></div>
+      </div>
+      <div class="sim-round locked" data-round="r2">
+        <h3>Round 2 — Second Chance<span class="round-sub"> — 2 matches × 14 players</span></h3>
+        <div class="sim-matches" id="simR2Grid"></div>
+      </div>
+      <div class="sim-round locked" data-round="r3">
+        <h3>Round 3 — Survival<span class="round-sub"> — 2 matches × 18 players</span></h3>
+        <div class="sim-matches" id="simR3Grid"></div>
+      </div>
+      <div class="sim-round locked" data-round="r4">
+        <h3>Round 4 — Final Chance<span class="round-sub"> — 1 match × 14 players</span></h3>
+        <div class="sim-matches" id="simR4Grid"></div>
+      </div>
+
+      <div class="sim-finalists-wrap">
+        <h3>Grand Final Qualified</h3>
+        <div class="finalist-grid" id="simFinalistList"></div>
+        <div class="sim-dutch-notice" id="simDutchNotice" style="display:none"></div>
+      </div>
+    </div>
+
     <!-- Bracket tab -->
     <div class="tab-panel" id="panelBracket" style="display:none">
       <div class="bracket-intro">
@@ -189,5 +232,6 @@
   </footer>
 
   <script src="app.js"></script>
+  <script src="simulator.js"></script>
 </body>
 </html>

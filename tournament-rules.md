@@ -1,3 +1,48 @@
+# STAGE 2 - KNOCKOUTS
+
+**90.** Stage 2 consists of 4 separate rounds of matches to determine the finalists. An optional 5th round may be necessary to determine the 8th Dutch finalist.
+
+**91.** All matches in Stage 2 are played back-to-back on a rolling schedule. The break between matches shall be no less than 10 minutes.
+
+**92.** The round structure and progression is as listed in the table below:
+
+| Placement | Outcome |
+|---|---|
+|  | **Round 1 - 4 matches of 25 players** |
+| P1 | Qualified |
+| P2-8 | Advance to Round 2 (Second Chance) |
+| P9-12 | Advance to Round 3 (Survival) |
+| P13-25 | Eliminated |
+|  | **Round 2 (Second Chance) - 2 matches of 14 players** |
+| P1 | Qualified |
+| P2-4 | Advance to Round 4 (Final Chance) |
+| P5-14 | Advance to Round 3 (Survival) |
+|  | **Round 3 (Survival) - 2 matches of 18 players** |
+| P1-4 | Advance to Round 4 (Final Chance) |
+| P5-18 | Eliminated |
+|  | **Round 4 (Final Chance) - 1 match of 14 players** |
+| P1 | Qualified |
+| P2-14 | Eliminated |
+|  | **[IF NEEDED] Round 5 (Dutch Qualification) - 1 match of 4 players** |
+| P1 | Qualified |
+| P2-4 | Eliminated |
+
+**93.** The initial Round 1 match lineups shall be determined by Stage 1 results using the Snake Seeding System. Exact match seedings are defined in Appendix D.
+
+**94.** All match configurations are defined in Appendix B.
+
+## Stage 2 - Dutch Qualification
+
+**95.** If none of the 7 qualified players from Round 1-4 are Dutch, an additional Round 5 may be held to fill the 8th slot in Stage 3.
+
+**96.** If a Dutch player has already qualified from Round 1-4 OR if no Dutch players played in Stage 2, the 8th slot is instead awarded to the 2nd placed player in Round 4 and no Round 5 is played.
+
+**97.** If Round 5 is played, up to 4 Dutch players are selected for it, determined by their prior placements in Rounds 4, 3 & 1 (whoever advanced the furthest). If two or more players share the same match placement for a round, the player with a better Stage 1 placement is ranked higher.
+
+**98.** The Tournament Organizers reserve the right to request the qualified Dutch player to provide proof of Dutch citizenship.
+
+---
+
 # APPENDIX B - MATCH CONFIGURATIONS
 
 ## Stage 2 - Knockouts
