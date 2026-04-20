@@ -748,7 +748,8 @@ function renderBracket() {
 async function fetchData() {
   dom.dot.classList.add('fetching');
   try {
-    const res = await fetch(API);
+    const frozen = Date.now() >= DEADLINE.getTime();
+    const res = await fetch(frozen ? './snapshot.json' : API);
     if (!res.ok) throw new Error(`${res.status}`);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
@@ -852,4 +853,4 @@ setInterval(() => {
 
 // ── Init ──────────────────────────────────────────────────────
 fetchData();
-setInterval(fetchData, REFRESH * 1000);
+if (Date.now() < DEADLINE.getTime()) setInterval(fetchData, REFRESH * 1000);
