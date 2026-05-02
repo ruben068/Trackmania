@@ -95,14 +95,26 @@
   }
 
   // Merge downstream: preserve existing order for drivers still in pool,
-  // append newcomers in seed order at the end, drop missing drivers.
+  // insert newcomers at the position implied by their Stage 1 seed
+  // (so a #4 dropping into R2 lands near the top, not the bottom).
   function mergePreserve(existing, newPool) {
     const poolSet = new Set(newPool);
     const kept = (existing || []).filter(n => poolSet.has(n));
     const keptSet = new Set(kept);
-    const newcomers = newPool.filter(n => !keptSet.has(n));
-    newcomers.sort((a, b) => seedOf(a) - seedOf(b));
-    return kept.concat(newcomers);
+    const newcomers = newPool
+      .filter(n => !keptSet.has(n))
+      .sort((a, b) => seedOf(a) - seedOf(b));
+
+    const result = [...kept];
+    for (const name of newcomers) {
+      const targetSeed = seedOf(name);
+      let insertAt = result.length;
+      for (let i = 0; i < result.length; i++) {
+        if (seedOf(result[i]) > targetSeed) { insertAt = i; break; }
+      }
+      result.splice(insertAt, 0, name);
+    }
+    return result;
   }
 
   function rebuildR2() {
@@ -252,7 +264,6 @@
       if (!round || !match) return;
       const s = Sortable.create(ol, {
         animation: 150,
-        handle: '.sim-handle',
         ghostClass: 'sim-ghost',
         chosenClass: 'sim-chosen',
         dragClass: 'sim-drag',
