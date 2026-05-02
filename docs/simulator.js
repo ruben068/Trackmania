@@ -6,14 +6,17 @@
 (function () {
   'use strict';
 
-  const SIM_KEY = 'rbf-sim-v3';
+  const SIM_KEY = 'rbf-sim-v4';
 
-  // Round 1 seed-to-match map (from Appendix D)
-  const R1_SEEDS = {
-    0: [1, 8, 9, 16, 17, 24, 25, 32, 33, 40, 41, 48, 49, 56, 57, 64, 65, 72, 73, 80, 81, 88, 89, 96, 97],
-    1: [4, 5, 12, 13, 20, 21, 28, 29, 36, 37, 44, 45, 52, 53, 60, 61, 68, 69, 76, 77, 84, 85, 92, 93, 100],
-    2: [3, 6, 11, 14, 19, 22, 27, 30, 35, 38, 43, 46, 51, 54, 59, 62, 67, 70, 75, 78, 83, 86, 91, 94, 99],
-    3: [2, 7, 10, 15, 18, 23, 26, 31, 34, 39, 42, 47, 50, 55, 58, 63, 66, 71, 74, 79, 82, 87, 90, 95, 98],
+  // Official Round 1 bracket as published by Red Bull. Hardcoded by name
+  // because the snapshot's tiebreakers diverge from the official cut for a
+  // few tied players, which would otherwise put them in the wrong match.
+  // Within-match order is by current snapshot rank (best first).
+  const R1_OFFICIAL = {
+    0: ['AR_Mudda', 'Epos.', 'Whizzy..', 'DubbyTM', 'Soulja...', 'WosileTM', 'ROtrex..', 'charles-..', 'NiTech91', 'lukefast05', 'Dionysos.TM.', 'keby..', 'Mince.AZ', 'Ricso5', 'Evon-', 'Richie1308', 'Loupphok', 'Mitra-17', 'Susuwi', 'Razii.', 'Wiggity..', 'Kurisu-tina_', 'camiroshan1', 'Maxtrak', 'Eria-.'],
+    1: ['CarlJr.', 'LinkMaxTm', 'mime-', 'MASSA_', 'Scrapie98', 'MimoJr.', 'Gwenn.', 'NuPrime_TM', 'Yekcosdo', 'Sheinex', 'NikoTm', 'SkandeaR', 'bepeze.', 'Cinxsss', 'TaMaR...', 'pusztitopako', 'Yamii._.', 'brick555', 'snKappaTM', 'Kakne..', 'Legu18', 'wups1e', 'Dark.BS', 'Alex-w.', 'No1RioluFan'],
+    2: ['PacTM', 'Samifying', 'BrenTM', 'AffiTM', 'Melioo.-', 'baiwack', 'Spammiej', 'ComplexStatics_', 'WorkerTM', 'zulesTM', 'bestie77', 'Viiper..', 'The_Curiosity', 'kandzsika', 'josh1248', 'rowy_201', 'jdon.', 'Kubas.', 'Stufts.', 'SSanoTM', 'PiasekTM', 'BirdieTM', 'tuduttuduu', 'Norlly.', 'Jean-Rene'],
+    3: ['GranaDy.', 'eLconn21', 'Binkss.', 'Poepboer', 'Otaaaq', 'Hyll-TM', 'J_Swag', 'qpdb...', 'Smileyb0b.', 'iiHugo', 'purple_tm', 'Jann.-', 'Erskii..', 'Dog..', 'ThiccBoyLone', 'TarporTM', 'Zekyrum', 'forever.sl', 'CptSalmon', 'noiszia', 'Andy__RC', 'RYCHLIK_TM', 'Intax', 'tweenTM', 'DAM_TM'],
   };
 
   // Zone thresholds per round — index-based, 0-indexed position
@@ -53,6 +56,7 @@
   let ranked = [];
   let driverByName = new Map();
   let sortables = [];
+  let highlightQuery = '';
 
   const $ = id => document.getElementById(id);
   const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
@@ -86,11 +90,7 @@
   function autoFillR1() {
     state.r1 = {};
     for (let m = 0; m < 4; m++) {
-      const names = R1_SEEDS[m]
-        .map(seed => ranked[seed - 1])
-        .filter(Boolean)
-        .map(d => d.name);
-      state.r1['m' + m] = names;
+      state.r1['m' + m] = R1_OFFICIAL[m].filter(n => driverByName.has(n));
     }
   }
 
@@ -230,7 +230,10 @@
     const zone = ROUNDS[round].zoneFor(i);
     const cls = ZONE_META[zone].cls;
     const position = i + 1;
-    return `<li class="sim-driver ${cls}" data-name="${esc(name)}">
+    const hit = highlightQuery && name.toLowerCase().includes(highlightQuery);
+    const hitCls = hit ? ' sim-hit' : '';
+    const hitId = hit ? ' data-hit="1"' : '';
+    return `<li class="sim-driver ${cls}${hitCls}" data-name="${esc(name)}"${hitId}>
       <span class="sim-pos">P${position}</span>
       <span class="sim-seed">#${seedOf(name)}</span>
       <span class="sim-driver-name">${flag(driver.flag)}${esc(name)}</span>
@@ -458,15 +461,57 @@
     }
   }
 
+  // ── Search / highlight ─────────────────────────────────────
+  function applySearch(rawQuery) {
+    const q = (rawQuery || '').trim().toLowerCase();
+    highlightQuery = q;
+
+    const info = $('simSearchInfo');
+    if (!q) {
+      if (info) { info.textContent = ''; info.className = 'sim-search-info'; }
+      // Re-render to clear highlights
+      if (ranked.length) renderAll();
+      return;
+    }
+
+    if (q.length < 2) {
+      if (info) { info.textContent = ''; info.className = 'sim-search-info'; }
+      if (ranked.length) renderAll();
+      return;
+    }
+
+    if (ranked.length) renderAll();
+
+    const hits = document.querySelectorAll('#panelSimulator .sim-driver.sim-hit');
+    if (info) {
+      if (hits.length === 0) {
+        info.textContent = 'Not in top 100';
+        info.className = 'sim-search-info miss';
+      } else {
+        info.textContent = `${hits.length} match${hits.length > 1 ? 'es' : ''}`;
+        info.className = 'sim-search-info hit';
+      }
+    }
+    if (hits.length > 0) {
+      requestAnimationFrame(() => {
+        hits[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
+  }
+
   function wire() {
-    const a = $('simAutoFill');
-    if (a) a.addEventListener('click', () => {
-      if (confirm('Reset simulator to seed-based predicted order?')) autoFill();
-    });
     const r = $('simReset');
     if (r) r.addEventListener('click', () => {
-      if (confirm('Reset all simulator choices?')) reset();
+      if (confirm('Reset to seed-based predictions? Your manual changes will be lost.')) autoFill();
     });
+    const s = $('simSearch');
+    if (s) {
+      let timer;
+      s.addEventListener('input', () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => applySearch(s.value), 150);
+      });
+    }
   }
 
   window.renderSimulator = () => {

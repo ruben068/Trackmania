@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 
 const API_URL = 'https://redbull-faster-leaderboard.redbull-faster.workers.dev/leaderboard';
 let cachedData = null;
@@ -20,7 +20,7 @@ async function fetchLeaderboard() {
   return cachedData;
 }
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'docs')));
 
 app.get('/api/leaderboard', async (req, res) => {
   try {

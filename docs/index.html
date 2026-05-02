@@ -3,24 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Red Bull Faster — Live Rankings</title>
+  <title>Red Bull Faster — Stage 2 Path Simulator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=VT323&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="brutalist.css">
   <script data-goatcounter="https://ruben.goatcounter.com/count"
           async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
-  <div class="noise"></div>
-
   <header>
-    <div class="header-left">
-      <div class="logo-block">
-        <span class="logo-icon">⚡</span>
-        <div>
-          <h1>RED BULL <span class="accent">FASTER</span></h1>
-          <p class="subtitle">TRACKMANIA — LIVE RANKINGS</p>
-        </div>
+    <div class="logo-block">
+      <span class="logo-icon">⚡</span>
+      <div>
+        <h1>RED BULL <span class="accent">FASTER</span></h1>
+        <p class="subtitle">STAGE 2 — PATH SIMULATOR</p>
       </div>
     </div>
     <div class="header-right">
@@ -31,122 +27,25 @@
     </div>
   </header>
 
-  <!-- Hero callout -->
-  <div class="hero-callout" id="heroCallout">
-    <button class="callout-btn" id="calloutSimBtn">TRY THE SIMULATOR →</button>
-  </div>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab active" data-tab="bracket">Stage 2</button>
-    <button class="tab" data-tab="simulator">Simulator</button>
-  </div>
-
-  <!-- Toolbar (leaderboard tab) -->
-  <div class="toolbar" id="toolbarMain" style="display:none">
-    <div class="toolbar-row">
-      <div class="search-wrap">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input type="text" id="searchInput" placeholder="Search driver..." autocomplete="off" spellcheck="false">
-      </div>
-      <div class="toolbar-actions">
-        <select id="countryFilter" class="country-select">
-          <option value="">All countries</option>
-        </select>
-        <div class="findme-wrap">
-          <input type="text" id="findMeInput" placeholder="Your name..." autocomplete="off" spellcheck="false">
-          <button id="findMeBtn" class="findme-btn">FIND ME</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <main>
     <div id="loading" class="state-msg">
       <div class="loader"></div>
-      <p>Connecting to live timing...</p>
+      <p>Loading Stage 1 final standings...</p>
     </div>
 
     <div id="error" class="state-msg" style="display:none">
       <p class="error-text"></p>
     </div>
 
-    <!-- Leaderboard tab -->
-    <div class="tab-panel" id="panelLeaderboard" style="display:none">
-      <div class="table-wrap" style="display:none" id="tableWrap">
-        <table id="leaderboard">
-          <thead>
-            <tr>
-              <th class="col-rank">#</th>
-              <th class="col-player">Driver</th>
-              <th class="col-time sortable" id="hMap1" data-sort="map1">Map 1 <span class="sort-arrow">↕</span></th>
-              <th class="col-time sortable" id="hMap2" data-sort="map2">Map 2 <span class="sort-arrow">↕</span></th>
-              <th class="col-time sortable" id="hMap3" data-sort="map3">Map 3 <span class="sort-arrow">↕</span></th>
-              <th class="col-total sortable active" id="hTotal" data-sort="total">Combined <span class="sort-arrow">↕</span></th>
-              <th class="col-improved">Last Run</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-
-      <div id="loadMore" class="load-more" style="display:none">
-        <button id="loadMoreBtn">LOAD MORE</button>
-        <span id="loadMoreInfo" class="load-more-info"></span>
-      </div>
-    </div>
-
-    <!-- Countries tab -->
-    <div class="tab-panel" id="panelCountries" style="display:none">
-      <div class="table-wrap">
-        <table id="countryTable">
-          <thead>
-            <tr>
-              <th class="col-rank">#</th>
-              <th class="col-player">Country</th>
-              <th class="col-time">Best Driver</th>
-              <th class="col-total">Best Time</th>
-              <th class="col-time">Drivers</th>
-              <th class="col-time">Avg Time (Top 5)</th>
-            </tr>
-          </thead>
-          <tbody id="countryBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Compare tab -->
-    <div class="tab-panel" id="panelCompare" style="display:none">
-      <div class="compare-inputs">
-        <div class="compare-field">
-          <label>Driver 1</label>
-          <input type="text" id="cmp1" placeholder="Name..." autocomplete="off" spellcheck="false">
-        </div>
-        <span class="compare-vs">VS</span>
-        <div class="compare-field">
-          <label>Driver 2</label>
-          <input type="text" id="cmp2" placeholder="Name..." autocomplete="off" spellcheck="false">
-        </div>
-        <button id="compareBtn" class="findme-btn">COMPARE</button>
-      </div>
-      <div id="compareResult" class="compare-result"></div>
-    </div>
-
-    <!-- Stats tab -->
-    <div class="tab-panel" id="panelStats" style="display:none">
-      <div class="stats-grid" id="statsGrid"></div>
-    </div>
-
-    <!-- Simulator tab -->
-    <div class="tab-panel" id="panelSimulator" style="display:none">
+    <div id="panelSimulator" style="display:none">
       <div class="sim-intro">
-        <h2>Tournament Path Simulator</h2>
-        <p>Stage 1 is done — now play out Stage 2 yourself. Starts seeded by the final Stage 1 ranking. <strong>Drag any driver up or down</strong> to change the match outcome; later rounds auto-populate based on the finishing positions. Try out your favourite upsets or see who needs the second-chance bracket to reach the Grand Final.</p>
-        <div class="sim-controls">
-          <button id="simAutoFill" class="sim-btn primary">AUTO-FILL BY SEED</button>
-          <button id="simReset" class="sim-btn">RESET</button>
+        <p>Drag any driver up or down to change a match outcome — later rounds auto-fill from the finishing positions. Seeded with the final Stage 1 top 100.</p>
+        <div class="sim-toolbar">
+          <div class="sim-search-wrap">
+            <input type="text" id="simSearch" placeholder="Find your name in the bracket..." autocomplete="off" spellcheck="false">
+            <span id="simSearchInfo" class="sim-search-info"></span>
+          </div>
+          <button id="simReset" class="sim-btn">RESET TO SEEDS</button>
         </div>
         <div class="sim-progress">
           <div class="sim-progress-item"><span>Round 1</span><strong id="simR1Count">—</strong></div>
@@ -161,15 +60,15 @@
         <h3>Round 1<span class="round-sub"> — 4 matches × 25 players</span></h3>
         <div class="sim-matches" id="simR1Grid"></div>
       </div>
-      <div class="sim-round locked" data-round="r2">
+      <div class="sim-round" data-round="r2">
         <h3>Round 2 — Second Chance<span class="round-sub"> — 2 matches × 14 players</span></h3>
         <div class="sim-matches" id="simR2Grid"></div>
       </div>
-      <div class="sim-round locked" data-round="r3">
+      <div class="sim-round" data-round="r3">
         <h3>Round 3 — Survival<span class="round-sub"> — 2 matches × 18 players</span></h3>
         <div class="sim-matches" id="simR3Grid"></div>
       </div>
-      <div class="sim-round locked" data-round="r4">
+      <div class="sim-round" data-round="r4">
         <h3>Round 4 — Final Chance<span class="round-sub"> — 1 match × 14 players</span></h3>
         <div class="sim-matches" id="simR4Grid"></div>
       </div>
@@ -180,24 +79,18 @@
         <div class="sim-dutch-notice" id="simDutchNotice" style="display:none"></div>
       </div>
     </div>
-
-    <!-- Bracket tab -->
-    <div class="tab-panel active" id="panelBracket" style="display:none">
-      <div class="bracket-intro">
-        <p><strong>Stage 1 is locked in.</strong> These are the official Round 1 seedings for Stage 2 — Multi-life Knockout, 6 tracks, 4 rounds per track.</p>
-        <p>Want to see how the bracket plays out? <a href="#" class="intro-link" id="introSimLink">Open the simulator →</a> &nbsp;·&nbsp; <a href="https://heyzine.com/flip-book/072f114424.html" target="_blank" rel="noopener" class="intro-link">Full tournament rules →</a></p>
-        <div class="bracket-search">
-          <input type="text" id="bracketSearch" placeholder="Find player" autocomplete="off" spellcheck="false">
-          <span id="bracketSearchInfo" class="bracket-search-info"></span>
-        </div>
-      </div>
-      <div class="bracket-grid" id="bracketGrid"></div>
-    </div>
   </main>
 
   <footer>
-    <p>Data sourced from Nadeo Live Services via community API. Not affiliated with Red Bull or Ubisoft Nadeo.</p>
-    <p><a href="https://www.redbull.com/int-en/events/red-bull-faster/" target="_blank" rel="noopener" class="footer-link">Official Red Bull Faster event page →</a></p>
+    <p class="footer-primary">
+      Looking for the live overall leaderboard?
+      <a href="https://redbull.johnnycyan.com/?stage=2" target="_blank" rel="noopener" class="footer-link">redbull.johnnycyan.com →</a>
+      <span class="footer-sep">·</span>
+      <a href="https://heyzine.com/flip-book/072f114424.html" target="_blank" rel="noopener" class="footer-link">Tournament rules →</a>
+      <span class="footer-sep">·</span>
+      <a href="https://www.redbull.com/int-en/events/red-bull-faster/" target="_blank" rel="noopener" class="footer-link">Official event page →</a>
+    </p>
+    <p class="footer-fine">Data sourced from Nadeo Live Services via community API. Not affiliated with Red Bull or Ubisoft Nadeo.</p>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
