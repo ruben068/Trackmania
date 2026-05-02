@@ -29,10 +29,6 @@ const dom = {
   countryFilter:$('countryFilter'),
   findInput:    $('findMeInput'),
   findBtn:      $('findMeBtn'),
-  recBanner:    $('recordsBanner'),
-  recLabel1:    $('recLabel1'),  recTime1: $('recTime1'),  recHolder1: $('recHolder1'),
-  recLabel2:    $('recLabel2'),  recTime2: $('recTime2'),  recHolder2: $('recHolder2'),
-  recLabel3:    $('recLabel3'),  recTime3: $('recTime3'),  recHolder3: $('recHolder3'),
   countryBody:  $('countryBody'),
   cmp1:         $('cmp1'),
   cmp2:         $('cmp2'),
@@ -310,34 +306,6 @@ function loadMore() {
 
   if (shown >= filtered.length) dom.loadWrap.style.display = 'none';
   else dom.loadInfo.textContent = `${Math.min(shown, filtered.length)} of ${filtered.length}`;
-}
-
-// ── Records banner ────────────────────────────────────────────
-function updateRecords() {
-  if (!raw) return;
-  const entries = raw.entries;
-
-  // Find best time per map
-  let wr1 = null, wr2 = null, wr3 = null;
-  for (const e of entries) {
-    if (e.t1 != null && (wr1 === null || e.t1 < wr1.t1)) wr1 = e;
-    if (e.t2 != null && (wr2 === null || e.t2 < wr2.t2)) wr2 = e;
-    if (e.t3 != null && (wr3 === null || e.t3 < wr3.t3)) wr3 = e;
-  }
-
-  dom.recLabel1.textContent = mapNames[0];
-  dom.recLabel2.textContent = mapNames[1];
-  dom.recLabel3.textContent = mapNames[2];
-
-  dom.recTime1.textContent = wr1 ? fmtTime(wr1.t1) : '—';
-  dom.recTime2.textContent = wr2 ? fmtTime(wr2.t2) : '—';
-  dom.recTime3.textContent = wr3 ? fmtTime(wr3.t3) : '—';
-
-  dom.recHolder1.innerHTML = wr1 ? `${esc(wr1.name)} <span class="record-when">${ago(wr1.li)}</span>` : '';
-  dom.recHolder2.innerHTML = wr2 ? `${esc(wr2.name)} <span class="record-when">${ago(wr2.li)}</span>` : '';
-  dom.recHolder3.innerHTML = wr3 ? `${esc(wr3.name)} <span class="record-when">${ago(wr3.li)}</span>` : '';
-
-  dom.recBanner.style.display = '';
 }
 
 // ── Country filter populate ───────────────────────────────────
@@ -782,7 +750,6 @@ async function fetchData() {
 
     sorted = doSort();
     updateHeaders();
-    updateRecords();
     populateCountries();
 
     dom.loading.style.display = 'none';
