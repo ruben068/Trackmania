@@ -73,6 +73,18 @@ h1 .accent {
 .countdown-pill .stat-label { color: rgba(255,255,255,0.8); }
 .countdown-pill .stat-value { color: white; }
 
+.stage2-pill {
+  flex-direction: column; align-items: center; gap: 0.15rem;
+  padding: 0.45rem 1.1rem;
+}
+.stage2-pill .stat-label {
+  font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase;
+  font-family: var(--sans); font-weight: 700;
+}
+.stage2-pill .stat-value {
+  font-size: 1.5rem; letter-spacing: 0.04em; line-height: 1;
+}
+
 .pulse-dot {
   width: 14px; height: 14px; background: #2ecc40; border: 2px solid var(--ink);
   border-radius: 0; animation: pulse-brut 2s steps(2) infinite;

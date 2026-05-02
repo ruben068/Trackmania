@@ -7,6 +7,7 @@ const PAGE = 100;
 const REFRESH = 50;
 const CUTOFF = 100; // top 100 advance
 const DEADLINE = new Date('2026-04-19T19:00:00+02:00'); // 19 April 7PM CEST
+const STAGE2_START = new Date('2026-05-02T15:00:00+02:00'); // 2 May 3PM CEST
 const RECENT_THRESHOLD = 5 * 60; // 5 minutes in seconds
 
 // ── DOM ───────────────────────────────────────────────────────
@@ -16,10 +17,7 @@ const dom = {
   error:        $('error'),
   tableWrap:    $('tableWrap'),
   tbody:        $('tbody'),
-  players:      $('playerCount'),
-  updated:      $('lastUpdated'),
-  countdown:    $('countdown'),
-  dot:          $('liveDot'),
+  stage2Countdown: $('stage2Countdown'),
   search:       $('searchInput'),
   loadWrap:     $('loadMore'),
   loadBtn:      $('loadMoreBtn'),
@@ -44,7 +42,6 @@ const dom = {
   bracketGrid:  $('bracketGrid'),
   bracketSearch: $('bracketSearch'),
   bracketSearchInfo: $('bracketSearchInfo'),
-  calloutBtn:   $('calloutBtn'),
   calloutSimBtn:$('calloutSimBtn'),
   introSimLink: $('introSimLink'),
 };
@@ -55,7 +52,6 @@ let sorted = null;
 let shown = PAGE;
 let sortBy = 'total';
 let mapNames = ['Map 1', 'Map 2', 'Map 3'];
-let fetchedAt = 0;
 let activeTab = 'bracket';
 let highlightName = '';
 let prevRanks = new Map(); // name -> previous rank for movement tracking
@@ -129,19 +125,23 @@ function expand(e) {
   };
 }
 
-// ── Countdown ─────────────────────────────────────────────────
+// ── Countdown to Stage 2 ──────────────────────────────────────
 function updateCountdown() {
-  const now = Date.now();
-  const diff = DEADLINE.getTime() - now;
-  if (diff <= 0) { dom.countdown.textContent = 'CLOSED'; return; }
+  const diff = STAGE2_START.getTime() - Date.now();
+  if (diff <= 0) { dom.stage2Countdown.textContent = 'LIVE NOW'; return; }
   const days = Math.floor(diff / 86400000);
-  const hrs = Math.floor((diff % 86400000) / 3600000);
+  const hrs  = Math.floor((diff % 86400000) / 3600000);
   const mins = Math.floor((diff % 3600000) / 60000);
-  if (days > 0) dom.countdown.textContent = `${days}d ${hrs}h`;
-  else dom.countdown.textContent = `${hrs}h ${mins}m`;
+  const secs = Math.floor((diff % 60000) / 1000);
+  if (days > 0) {
+    dom.stage2Countdown.textContent = `${days}d ${String(hrs).padStart(2, '0')}h`;
+  } else {
+    dom.stage2Countdown.textContent =
+      `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }
 }
 updateCountdown();
-setInterval(updateCountdown, 60000);
+setInterval(updateCountdown, 1000);
 
 // ── Sort ──────────────────────────────────────────────────────
 function doSort() {
@@ -748,7 +748,6 @@ function renderBracket() {
 
 // ── Fetch ─────────────────────────────────────────────────────
 async function fetchData() {
-  dom.dot.classList.add('fetching');
   try {
     const frozen = Date.now() >= DEADLINE.getTime();
     const res = await fetch(frozen ? './snapshot.json' : API);
@@ -769,10 +768,6 @@ async function fetchData() {
       dom.hMap2.firstChild.textContent = mapNames[1] || 'Map 2';
       dom.hMap3.firstChild.textContent = mapNames[2] || 'Map 3';
     }
-
-    dom.players.textContent = raw.total || raw.entries.length;
-    fetchedAt = Date.now();
-    dom.updated.textContent = 'just now';
 
     // Expose data for simulator
     window.getSimData = () => raw;
@@ -806,8 +801,6 @@ async function fetchData() {
       dom.error.style.display = '';
       dom.error.querySelector('.error-text').textContent = 'Connection failed — ' + err.message;
     }
-  } finally {
-    dom.dot.classList.remove('fetching');
   }
 }
 
@@ -848,17 +841,8 @@ function switchTab(tabName) {
   if (tab) tab.click();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-dom.calloutBtn.addEventListener('click', () => switchTab('bracket'));
 dom.calloutSimBtn.addEventListener('click', () => switchTab('simulator'));
 dom.introSimLink.addEventListener('click', e => { e.preventDefault(); switchTab('simulator'); });
-
-// ── Ticker ────────────────────────────────────────────────────
-setInterval(() => {
-  if (fetchedAt) {
-    const s = Math.floor((Date.now() - fetchedAt) / 1000);
-    dom.updated.textContent = s + 's ago';
-  }
-}, 5000);
 
 // ── Init ──────────────────────────────────────────────────────
 fetchData();
