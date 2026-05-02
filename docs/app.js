@@ -45,6 +45,8 @@ const dom = {
   bracketSearch: $('bracketSearch'),
   bracketSearchInfo: $('bracketSearchInfo'),
   calloutBtn:   $('calloutBtn'),
+  calloutSimBtn:$('calloutSimBtn'),
+  introSimLink: $('introSimLink'),
 };
 
 // ── State ─────────────────────────────────────────────────────
@@ -54,7 +56,7 @@ let shown = PAGE;
 let sortBy = 'total';
 let mapNames = ['Map 1', 'Map 2', 'Map 3'];
 let fetchedAt = 0;
-let activeTab = 'leaderboard';
+let activeTab = 'bracket';
 let highlightName = '';
 let prevRanks = new Map(); // name -> previous rank for movement tracking
 
@@ -793,6 +795,10 @@ async function fetchData() {
     dom.tableWrap.style.display = '';
 
     render();
+    if (activeTab === 'bracket') {
+      $('panelBracket').style.display = '';
+      renderBracket();
+    }
   } catch (err) {
     console.error('Fetch failed:', err);
     if (dom.tableWrap.style.display === 'none') {
@@ -837,11 +843,14 @@ dom.bracketSearch.addEventListener('input', () => {
 });
 
 // Hero callout -> Stage 2 tab
-dom.calloutBtn.addEventListener('click', () => {
-  const stage2Tab = document.querySelector('.tab[data-tab="bracket"]');
-  if (stage2Tab) stage2Tab.click();
+function switchTab(tabName) {
+  const tab = document.querySelector(`.tab[data-tab="${tabName}"]`);
+  if (tab) tab.click();
   window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+}
+dom.calloutBtn.addEventListener('click', () => switchTab('bracket'));
+dom.calloutSimBtn.addEventListener('click', () => switchTab('simulator'));
+dom.introSimLink.addEventListener('click', e => { e.preventDefault(); switchTab('simulator'); });
 
 // ── Ticker ────────────────────────────────────────────────────
 setInterval(() => {

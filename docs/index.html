@@ -7,6 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=VT323&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="brutalist.css">
+  <script data-goatcounter="https://ruben.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
   <div class="noise"></div>
@@ -40,8 +42,14 @@
 
   <!-- Hero callout -->
   <div class="hero-callout" id="heroCallout">
-    <span class="callout-text">Curious where you'd land in <strong>Stage 2</strong>?</span>
-    <button class="callout-btn" id="calloutBtn">SEE LIVE SEEDING →</button>
+    <div class="callout-headline">
+      <span class="callout-eyebrow">Stage 1 Complete</span>
+      <span class="callout-text">The <strong>Top 100</strong> is locked in — Stage 2 brackets are set.</span>
+    </div>
+    <div class="callout-actions">
+      <button class="callout-btn primary" id="calloutBtn">VIEW STAGE 2 SEEDING →</button>
+      <button class="callout-btn" id="calloutSimBtn">TRY THE SIMULATOR →</button>
+    </div>
   </div>
 
   <!-- Records banner -->
@@ -65,16 +73,16 @@
 
   <!-- Tabs -->
   <div class="tabs">
-    <button class="tab active" data-tab="leaderboard">Leaderboard</button>
+    <button class="tab active" data-tab="bracket">Stage 2</button>
+    <button class="tab" data-tab="simulator">Simulator</button>
+    <button class="tab" data-tab="leaderboard">Leaderboard</button>
     <button class="tab" data-tab="countries">Countries</button>
     <button class="tab" data-tab="compare">Compare</button>
     <button class="tab" data-tab="stats">Stats</button>
-    <button class="tab" data-tab="bracket">Stage 2</button>
-    <button class="tab" data-tab="simulator">Simulator</button>
   </div>
 
   <!-- Toolbar (leaderboard tab) -->
-  <div class="toolbar" id="toolbarMain">
+  <div class="toolbar" id="toolbarMain" style="display:none">
     <div class="toolbar-row">
       <div class="search-wrap">
         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -105,7 +113,7 @@
     </div>
 
     <!-- Leaderboard tab -->
-    <div class="tab-panel active" id="panelLeaderboard">
+    <div class="tab-panel" id="panelLeaderboard" style="display:none">
       <div class="table-wrap" style="display:none" id="tableWrap">
         <table id="leaderboard">
           <thead>
@@ -174,7 +182,7 @@
     <div class="tab-panel" id="panelSimulator" style="display:none">
       <div class="sim-intro">
         <h2>Tournament Path Simulator</h2>
-        <p>Starts with the current Stage 1 ranking as predicted placement. <strong>Drag any driver up or down</strong> to change the match outcome. Subsequent rounds auto-populate based on the finishing positions.</p>
+        <p>Stage 1 is done — now play out Stage 2 yourself. Starts seeded by the final Stage 1 ranking. <strong>Drag any driver up or down</strong> to change the match outcome; later rounds auto-populate based on the finishing positions. Try out your favourite upsets or see who needs the second-chance bracket to reach the Grand Final.</p>
         <div class="sim-controls">
           <button id="simAutoFill" class="sim-btn primary">AUTO-FILL BY SEED</button>
           <button id="simReset" class="sim-btn">RESET</button>
@@ -213,10 +221,10 @@
     </div>
 
     <!-- Bracket tab -->
-    <div class="tab-panel" id="panelBracket" style="display:none">
+    <div class="tab-panel active" id="panelBracket" style="display:none">
       <div class="bracket-intro">
-        <p>Virtual Stage 2 Round 1 seeding based on the current top 100. Multi-life Knockout format, 6 tracks, 4 rounds per track.</p>
-        <p><a href="https://heyzine.com/flip-book/072f114424.html" target="_blank" rel="noopener" class="intro-link">Read the full tournament rules →</a></p>
+        <p><strong>Stage 1 is locked in.</strong> These are the official Round 1 seedings for Stage 2 — Multi-life Knockout, 6 tracks, 4 rounds per track.</p>
+        <p>Want to see how the bracket plays out? <a href="#" class="intro-link" id="introSimLink">Open the simulator →</a> &nbsp;·&nbsp; <a href="https://heyzine.com/flip-book/072f114424.html" target="_blank" rel="noopener" class="intro-link">Full tournament rules →</a></p>
         <div class="bracket-search">
           <input type="text" id="bracketSearch" placeholder="Find your name in the bracket..." autocomplete="off" spellcheck="false">
           <span id="bracketSearchInfo" class="bracket-search-info"></span>
